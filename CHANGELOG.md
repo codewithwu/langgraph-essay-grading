@@ -1,16 +1,19 @@
 # Changelog
 
-All notable changes to this project will be documented in this file.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/).
-
 ## [Unreleased]
 
-### Added
+### Changed
+- **重构**: 整个项目从 Python (FastAPI + LangGraph) 迁移到 TypeScript (Vite + React)
+- **架构**: 从后端 + 前端架构改为纯前端 SPA，LLM API Key 由用户在浏览器内配置
+- **部署目标**: 改为 GitHub Pages 静态部署
 
-- FastAPI 后端接口，支持同步评分 (`POST /api/essays/grade`) 和 SSE 流式评分 (`POST /api/essays/grade/stream`)
-- 健康检查接口 (`GET /api/health`)
-- SSE 事件格式化工具 (`src/utils/sse.py`)
-- 评分服务层，桥接 LangGraph 图流到 async 接口 (`src/services/grading.py`)
-- 前端页面 (`static/index.html`)，支持 SSE 流式展示评分过程、loading 动效和骨架屏
-- Zod `ScoreDetail` schema 与 LangGraph `EssayState` 状态容器 (`src/workflow/state.ts`)
+### Added
+- React + TypeScript 前端，保留原版 UI 视觉
+- `/settings` 页面管理 LLM 连接信息（API Key / BaseURL / 模型名），存于 localStorage
+- GitHub Actions 自动部署到 gh-pages
+- Vitest 单元测试覆盖 settings / state / prompts / routes / graph / hook
+
+### Removed
+- 全部 Python 源码（langgraph_essay_grading、langchain_agent、FastAPI 服务层）
+- Python Notebook、pyproject.toml、uv.lock、.venv
+- .env（API Key 改由前端用户配置）
