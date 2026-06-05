@@ -222,3 +222,11 @@ __marimo__/
 
 # Interview preparation (mianshi)
 mianshi/
+
+# Node / Vite
+node_modules/
+dist/
+coverage/
+*.log
+.DS_Store
+.vite/
