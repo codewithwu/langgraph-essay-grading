@@ -1,6 +1,6 @@
 # 高考作文评分系统 | Gaokao Essay Grading System
 
-基于 LangGraph 的多维度智能评分系统，对高考作文进行审题立意、论据分析、结构评估、语言文采四维度评分。
+基于 LangGraph 的多维度智能评分系统，对高考作文进行审题立意、论据分析、结构评估、语言文采四维度评分。**纯前端实现，部署在 GitHub Pages**。
 
 ![前端界面展示](./page.png)
 
@@ -23,70 +23,78 @@
 
 当审题通过时，论据、结构、语言三个维度并行独立评估，效率更高。
 
-### 流式输出
+### 流式体验
 
-Web API 支持 SSE 流式返回，实时展示每个维度的评分进度与结果。
+每完成一个维度评分，前端立即更新对应卡片，无需等待全部完成。
+
+## 快速开始（本地开发）
+
+```bash
+npm install
+npm run dev          # 访问 http://localhost:5173
+```
+
+## 使用流程
+
+1. 打开页面，右上角点「设置」
+2. 填入你的 LLM API Key、BaseURL、模型名（默认已预填百灵配置）
+3. 点「测试连接」验证配置正确
+4. 点「保存」返回主页
+5. 输入作文题目与内容，点「开始评分」
+
+> **API Key 存于浏览器 localStorage**，不进任何后端。建议使用额度受限的次级 Key。
 
 ## 技术架构
 
 ```
-用户输入 → FastAPI → EssayState → LangGraph → [条件路由] → [并行LLM调用] → 综合评分
+浏览器 SPA
+  ├─ React (UI)
+  ├─ React Router (路由)
+  ├─ @langchain/langgraph (工作流编排)
+  ├─ @langchain/openai (LLM 客户端)
+  └─ localStorage (API Key 存储)
+       │
+       │ HTTPS 直连（无中间代理）
+       ▼
+   LLM Provider (百灵 / DeepSeek / 智谱 / OpenAI 等 OpenAI 兼容 API)
 ```
 
-- **状态管理**：LangGraph TypedDict 状态机
-- **LLM 调用**：LangChain with structured output（Pydantic ScoreDetail）
-- **Web 框架**：FastAPI + uvicorn + SSE-Starlette
-- **前端**：纯 HTML/CSS/JS，无框架依赖
+## 部署到 GitHub Pages
 
-## 项目结构
+1. 在 GitHub 仓库 Settings → Pages → Source 选「GitHub Actions」
+2. 推 `main` 分支即触发自动构建与部署
+3. 访问 `https://<user>.github.io/<repo>`
 
-```
-langgraph_essay_grading/    # 核心 LangGraph 评分工作流
-├── state.py                # EssayState 定义
-├── graph.py                # 图构建与条件路由
-├── nodes.py                # 各评分节点实现
-├── config.py               # 维度权重与阈值配置
-└── prompts.py              # 系统提示词
+构建产物在 `dist/`，由 `actions/deploy-pages` 上传。
 
-langchain_agent/            # 可复用的 Agent 工具库
-├── utils/llm_factory.py    # 多提供商 LLM 客户端工厂
-└── prompts/base.py         # JSON 输出提示词构建
+## 支持的 LLM Provider
 
-src/                        # Web 服务层
-├── main.py                 # FastAPI 入口
-├── routers/grading.py      # 评分 API 路由
-├── services/grading.py     # 评分服务封装
-└── static/index.html       # 前端页面
-```
+任何 OpenAI 兼容协议的 API 都可以。已在以下 provider 验证：
 
-## 快速开始
+- 百灵（默认）
+- DeepSeek
+- 智谱 GLM
+- 美团 LongCat
+- 魔塔、硅基流动
+- 自建 Ollama
+
+**注意**：浏览器直接请求 LLM API，依赖 provider 已配置 CORS 允许 `github.io` 域名。百灵已支持。
+
+## 开发
 
 ```bash
-# 安装依赖
-source .venv/bin/activate
-uv sync
-
-# 启动 Web 服务
-uv run python src/main.py
-
-# CLI 演示
-uv run python main.py
+npm test              # 跑 Vitest
+npm run lint          # ESLint
+npm run build         # 类型检查 + Vite 构建
 ```
 
-## API 接口
+## 安全提示
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/essays/grade` | POST | 同步评分，返回完整结果 |
-| `/api/essays/grade/stream` | POST | SSE 流式评分，实时推送各维度结果 |
-| `/api/essays/health` | GET | 健康检查 |
+- ⚠️ API Key 一旦填入，任何能访问此浏览器的人都能看到
+- ⚠️ 部署到公开 GH Pages 后，访客使用自己的 Key 评分；但若 Key 泄露到日志或源码，会被盗刷
+- ✅ Key 仅存 localStorage，不进 git 仓库
+- ✅ 建议在 LLM provider 端设置月度额度上限
 
-## 环境变量
+## License
 
-| 变量 | 说明 |
-|------|------|
-| `LING_API_KEY` | 百灵 API 密钥 |
-| `LING_BASEURL` | 百灵 API 地址 |
-| `LING_MODEL_NAME` | 模型名称 |
-
-详情参见 `.env.example`。
+MIT
