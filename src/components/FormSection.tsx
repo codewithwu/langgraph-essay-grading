@@ -65,9 +65,12 @@ export function FormSection({ disabled, onSubmit }: Props) {
           onChange={(e) => setEssay(e.target.value)}
           disabled={disabled}
         />
+        <span className="char-counter" aria-live="polite">
+          <strong>{essay.length}</strong> 字
+        </span>
       </div>
       <button type="submit" className="btn-submit" disabled={disabled}>
-        {disabled ? "评分中..." : "开始评分"}
+        {disabled ? "评分中" : "开始评分"}
       </button>
     </form>
   );

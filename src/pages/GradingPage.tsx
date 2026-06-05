@@ -71,6 +71,9 @@ export function GradingPage() {
 
   const showResults = events.length > 0;
 
+  let dimensionIndex = 0;
+  const nextIndex = () => ++dimensionIndex;
+
   return (
     <div className="container">
       <Header title="高考作文评分系统" subtitle="基于 LangGraph 的多维度智能评分" />
@@ -79,18 +82,23 @@ export function GradingPage() {
       <LoadingBar visible={running} text={done ? "评分完成" : latestLoadingText} />
 
       <div className={`results-section ${showResults ? "active" : ""}`}>
-        {showResults && <h2 className="section-title">多维度评分</h2>}
+        {showResults && (
+          <h2 className="section-title">
+            <span>多维度评分</span>
+            <small>DIMENSIONAL ANALYSIS</small>
+          </h2>
+        )}
         <div className="score-grid">
           {relevanceEvent && (() => {
             const d = extractScoreDetail(NODE_NAMES.RELEVANCE, relevanceEvent.update);
-            return d ? <ScoreCard title={NODE_LABELS[NODE_NAMES.RELEVANCE]} detail={d} /> : null;
+            return d ? <ScoreCard title={NODE_LABELS[NODE_NAMES.RELEVANCE]} detail={d} index={nextIndex()} /> : null;
           })()}
 
           {PARALLEL_DIMS.map((dim) => {
             const event = events.find((e) => e.node === dim);
             if (event) {
               const d = extractScoreDetail(dim, event.update);
-              if (d) return <ScoreCard key={dim} title={NODE_LABELS[dim]} detail={d} />;
+              if (d) return <ScoreCard key={dim} title={NODE_LABELS[dim]} detail={d} index={nextIndex()} />;
             }
             return relevanceEvent ? <SkeletonCard key={dim} /> : null;
           })}

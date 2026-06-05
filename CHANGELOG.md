@@ -6,13 +6,15 @@
 - **重构**: 整个项目从 Python (FastAPI + LangGraph) 迁移到 TypeScript (Vite + React)
 - **架构**: 从后端 + 前端架构改为纯前端 SPA，LLM API Key 由用户在浏览器内配置
 - **部署目标**: 改为 GitHub Pages 静态部署
+- **UI**: 重新设计为「墨韵」现代中式编辑美学——宣纸底色 + 墨黑主文 + 朱砂印章强调；引入 Noto Serif SC / Noto Sans SC / Inter / Ma Shan Zheng 字体系统；评分卡加入序号徽章、悬浮抬升、综合分改为盖印式印章（带印泥噪点纹理与微抖动动画）
 
 ### Added
-- React + TypeScript 前端，保留原版 UI 视觉
+- React + TypeScript 前端
 - `/settings` 页面管理 LLM 连接信息（API Key / BaseURL / 模型名），存于 localStorage
 - GitHub Actions 自动部署到 gh-pages
 - Vitest 单元测试覆盖 settings / state / prompts / routes / graph / hook
 - 内置 10 道 2008-2018 年高考作文题（`src/data/articles.md`），GradingPage 作文题目输入框上方支持下拉选择并回填
+- 体验提升：表单实时字符计数、按钮 hover 朱砂流光与右移箭头、加载态墨滴落入动画、卡片按维度序号 stagger reveal、印章盖下弹跳动效、自定义朱砂滚动条与选区配色
 
 ### Removed
 - 全部 Python 源码（langgraph_essay_grading、langchain_agent、FastAPI 服务层）

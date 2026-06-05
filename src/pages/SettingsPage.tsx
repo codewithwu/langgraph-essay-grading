@@ -102,8 +102,11 @@ export function SettingsPage() {
         </div>
 
         {testResult && (
-          <div className="field-help" style={{ marginTop: 12, fontSize: 14 }}>
-            {testResult}
+          <div
+            className={`test-result ${testResult.startsWith("✓") ? "success" : "error"}`}
+            role="status"
+          >
+            <span>{testResult}</span>
           </div>
         )}
       </form>

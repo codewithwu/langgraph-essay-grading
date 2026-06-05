@@ -8,8 +8,8 @@ export type Settings = {
 
 export const DEFAULT_SETTINGS: Settings = {
   apiKey: "",
-  baseUrl: "https://api.bailing.cn/v1",
-  modelName: "Ling-2.6-flash",
+  baseUrl: "https://api.tbox.cn/api/llm/v1/",
+  modelName: "Ling-2.6-1T",
 };
 
 export function loadSettings(): Settings {
