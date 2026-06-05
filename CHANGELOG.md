@@ -12,6 +12,7 @@
 - `/settings` 页面管理 LLM 连接信息（API Key / BaseURL / 模型名），存于 localStorage
 - GitHub Actions 自动部署到 gh-pages
 - Vitest 单元测试覆盖 settings / state / prompts / routes / graph / hook
+- 内置 10 道 2008-2018 年高考作文题（`src/data/articles.md`），GradingPage 作文题目输入框上方支持下拉选择并回填
 
 ### Removed
 - 全部 Python 源码（langgraph_essay_grading、langchain_agent、FastAPI 服务层）
