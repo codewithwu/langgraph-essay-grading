@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import { ARTICLES } from "../lib/articles";
 
 type Props = {
   disabled: boolean;
@@ -8,6 +9,7 @@ type Props = {
 export function FormSection({ disabled, onSubmit }: Props) {
   const [topic, setTopic] = useState("");
   const [essay, setEssay] = useState("");
+  const [selectedArticleId, setSelectedArticleId] = useState("");
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -20,14 +22,35 @@ export function FormSection({ disabled, onSubmit }: Props) {
     onSubmit(t, es);
   }
 
+  function handleArticleChange(id: string) {
+    setSelectedArticleId(id);
+    if (!id) return;
+    const a = ARTICLES.find((x) => x.id === id);
+    if (a) setTopic(a.prompt);
+  }
+
   return (
     <form className="form-section" onSubmit={handleSubmit}>
       <div className="form-group">
         <label htmlFor="topic">作文题目</label>
+        <select
+          id="article-select"
+          className="article-select"
+          value={selectedArticleId}
+          onChange={(e) => handleArticleChange(e.target.value)}
+          disabled={disabled}
+        >
+          <option value="">—— 选择题目 ——</option>
+          {ARTICLES.map((a) => (
+            <option key={a.id} value={a.id}>
+              {a.title}
+            </option>
+          ))}
+        </select>
         <input
           type="text"
           id="topic"
-          placeholder="请输入作文题目..."
+          placeholder="请输入或选择作文题目..."
           value={topic}
           onChange={(e) => setTopic(e.target.value)}
           disabled={disabled}
