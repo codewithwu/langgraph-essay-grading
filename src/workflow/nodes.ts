@@ -61,8 +61,8 @@ export function calculate_final_score(
 ): Partial<EssayStateType> {
   const final =
     state.relevance.score * WEIGHT_RELEVANCE +
-    state.evidence.score * WEIGHT_EVIDENCE +
-    state.structure.score * WEIGHT_STRUCTURE +
-    state.expression.score * WEIGHT_EXPRESSION;
+    (state.evidence?.score ?? 0) * WEIGHT_EVIDENCE +
+    (state.structure?.score ?? 0) * WEIGHT_STRUCTURE +
+    (state.expression?.score ?? 0) * WEIGHT_EXPRESSION;
   return { final_score: Math.round(final * 100) / 100 };
 }

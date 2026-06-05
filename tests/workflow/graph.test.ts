@@ -48,3 +48,37 @@ describe("graph integration", () => {
     expect(seen.length).toBeGreaterThanOrEqual(5);
   });
 });
+
+describe("graph short-circuit", () => {
+  beforeEach(() => {
+    vi.resetModules();
+  });
+
+  it("when relevance ≤ 0.5, skips the 3 other dimensions and still computes final score", async () => {
+    // Override the LLM mock to return a low score for relevance
+    vi.doMock("../../src/workflow/llm", () => ({
+      getLLM: () => ({
+        withStructuredOutput: () => ({
+          invoke: async () => ({ score: 0.3, reason: "off-topic" }),
+        }),
+      }),
+    }));
+
+    // Re-import graph with the new mock active
+    const { graph: shortCircuitGraph } = await import("../../src/workflow/graph");
+
+    const result = await shortCircuitGraph.invoke({
+      topic: "我的梦想",
+      essay: "完全跑题的内容...",
+    });
+
+    expect(result.relevance.score).toBe(0.3);
+    // Other dimensions should be undefined (skipped)
+    expect(result.evidence).toBeUndefined();
+    expect(result.structure).toBeUndefined();
+    expect(result.expression).toBeUndefined();
+    // Final score should be just relevance weight × 0.3
+    // 0.3 * 0.3 = 0.09, rounded to 0.09
+    expect(result.final_score).toBe(0.09);
+  });
+});
