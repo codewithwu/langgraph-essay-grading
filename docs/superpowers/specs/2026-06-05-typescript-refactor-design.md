@@ -188,14 +188,16 @@ START
 // src/workflow/nodes.ts
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getLLM } from "./llm";
-import { ScoreDetail } from "./state";
+import { EssayState, ScoreDetail } from "./state";
 import { SYSTEM_PROMPT, buildPrompt } from "./prompts";
 
+type Dim = "relevance" | "evidence" | "structure" | "expression";
+
 async function gradeDim(
-  state: EssayStateType,
-  dim: "relevance" | "evidence" | "structure" | "expression",
+  state: typeof EssayState.State,
+  dim: Dim,
   instruction: string
-): Promise<Partial<EssayStateType>> {
+): Promise<Partial<typeof EssayState.State>> {
   const llm = getLLM().withStructuredOutput(ScoreDetail);
   const messages = [
     new SystemMessage(buildPrompt(ScoreDetail) + SYSTEM_PROMPT),
@@ -203,15 +205,15 @@ async function gradeDim(
       `${instruction}\n给出 0 到 1 之间的分数，并说明理由。\n\n题目：${state.topic}\n\n作文：${state.essay}`
     ),
   ];
-  return { [dim]: await llm.invoke(messages) } as any;
+  return { [dim]: await llm.invoke(messages) } as Partial<typeof EssayState.State>;
 }
 
-export const check_relevance  = (s) => gradeDim(s, "relevance", "请评估审题立意...");
-export const check_evidence   = (s) => gradeDim(s, "evidence",  "请评估论据分析...");
-export const check_structure  = (s) => gradeDim(s, "structure", "请评估结构...");
-export const check_expression = (s) => gradeDim(s, "expression","请评估语言文采...");
+export const check_relevance  = (s: typeof EssayState.State) => gradeDim(s, "relevance",  "请评估审题立意...");
+export const check_evidence   = (s: typeof EssayState.State) => gradeDim(s, "evidence",   "请评估论据分析...");
+export const check_structure  = (s: typeof EssayState.State) => gradeDim(s, "structure",  "请评估结构...");
+export const check_expression = (s: typeof EssayState.State) => gradeDim(s, "expression", "请评估语言文采...");
 
-export function calculate_final_score(state: EssayStateType) {
+export function calculate_final_score(state: typeof EssayState.State) {
   const final =
     state.relevance.score  * 0.3 +
     state.evidence.score   * 0.2 +
