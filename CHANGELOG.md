@@ -4,6 +4,7 @@
 
 ### Changed
 - 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」
+- README.md 项目名由「高考作文评分系统 | Gaokao Essay Grading System」改为「作文评分智能体 | Essay Grading Agent」
 
 ### Added
 - 顶栏右上角加入作者二维码 (`public/二维码.png`) 及「扫码可以加作者，支持一下」提示，点击放大查看；移动端自适应为横向排布

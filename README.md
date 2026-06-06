@@ -1,4 +1,4 @@
-# 高考作文评分系统 | Gaokao Essay Grading System
+# 作文评分智能体 | Essay Grading Agent
 
 基于 LangGraph 的多维度智能评分系统，对高考作文进行审题立意、论据分析、结构评估、语言文采四维度评分。**纯前端实现，部署在 GitHub Pages**。
 
