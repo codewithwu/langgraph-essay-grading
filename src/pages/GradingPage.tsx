@@ -70,6 +70,8 @@ export function GradingPage() {
 
   function handleSubmit(topic: string, essay: string) {
     // 语义:点「开始评分」即扣费,LLM 失败不退回(防止恶意重试刷量)
+    // 配额耗尽时短路:即使 Enter 键绕过 disabled 的提交按钮,run() 也不会被调用
+    if (exhausted) return;
     increment();
     run({ topic, essay }).catch((err) => alert(`评分请求失败: ${err.message ?? err}`));
   }

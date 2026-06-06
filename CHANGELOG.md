@@ -17,6 +17,13 @@
 - 内置 10 道 2008-2018 年高考作文题（`src/data/articles.md`），GradingPage 作文题目输入框上方支持下拉选择并回填
 - 体验提升：表单实时字符计数、按钮 hover 朱砂流光与右移箭头、加载态墨滴落入动画、卡片按维度序号 stagger reveal、印章盖下弹跳动效、自定义朱砂滚动条与选区配色
 - **额度限制**: 每个浏览器 localStorage 累计只能使用「开始评分」10 次,达到上限后按钮置灰并提示;通过 `src/lib/quota.ts` + `src/hooks/useQuota.ts` 实现,头/表单区持续显示「已用 X/10」
+- 集成测试 `tests/pages/GradingPage.test.tsx`: 验证配额耗尽时 `run` 不被调用,锁定 Enter 键短路修复
+
+### Fixed
+- **配额绕过**: `GradingPage.handleSubmit` 增加 `if (exhausted) return` 短路,防止 Enter 键在 disabled 按钮之外触发 `run` 调用并绕过配额
+
+### Changed
+- 头栏 `.app-header-quota.exhausted` 改用 `--vermillion` / `--vermillion-ink` 令牌,与全局朱砂主题保持一致
 
 ### Removed
 - 全部 Python 源码（langgraph_essay_grading、langchain_agent、FastAPI 服务层）
