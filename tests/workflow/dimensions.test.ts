@@ -42,14 +42,21 @@ describe("dimensions", () => {
     }
   });
 
-  it("getLabel 对每个维度返回非空中文标签", () => {
+  it("getLabel 对每个维度返回非空中文标签 (mode-aware)", () => {
     const allDims: Dim[] = [...STANDARD_DIMS, ...GAOKAO_DIMS];
     for (const d of allDims) {
-      const label = getLabel(d.node);
+      const label = getLabel(d.node, d.field === "evidence" ? "standard" : "gaokao");
+      // 注: evidence 仅在 standard 中, 用 standard mode; 其他节点在 gaokao 模式也能找到
       expect(label).toBeTruthy();
       expect(typeof label).toBe("string");
       expect(label.length).toBeGreaterThan(0);
     }
+  });
+
+  it("getLabel mode-aware: 同一节点在不同模式可返回不同 label", () => {
+    // check_structure 在 standard = "结构评估", 在 gaokao = "篇章结构"
+    expect(getLabel("check_structure", "standard")).toBe("结构评估");
+    expect(getLabel("check_structure", "gaokao")).toBe("篇章结构");
   });
 
   it("每种模式内节点名唯一(无冲突)", () => {

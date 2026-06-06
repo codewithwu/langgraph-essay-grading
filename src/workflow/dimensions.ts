@@ -39,7 +39,6 @@ export function getWeights(mode: Mode): Map<string, number> {
   return m;
 }
 
-export function getLabel(node: string): string {
-  const all = [...STANDARD_DIMS, ...GAOKAO_DIMS];
-  return all.find((d) => d.node === node)?.label ?? node;
+export function getLabel(node: string, mode: Mode): string {
+  return getDimensions(mode).find((d) => d.node === node)?.label ?? node;
 }
