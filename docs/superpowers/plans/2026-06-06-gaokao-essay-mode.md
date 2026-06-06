@@ -1374,7 +1374,7 @@ export function GradingPage() {
             const d = extractScoreDetail(NODE_NAMES.RELEVANCE, relevanceEvent.update);
             return d ? (
               <ScoreCard
-                title={getLabel(NODE_NAMES.RELEVANCE)}
+                title={getLabel(NODE_NAMES.RELEVANCE, mode)}
                 detail={d}
                 index={nextIndex()}
               />
@@ -1385,7 +1385,7 @@ export function GradingPage() {
             const event = events.find((e) => e.node === dim);
             if (event) {
               const d = extractScoreDetail(dim, event.update);
-              if (d) return <ScoreCard key={dim} title={getLabel(dim)} detail={d} index={nextIndex()} />;
+              if (d) return <ScoreCard key={dim} title={getLabel(dim, mode)} detail={d} index={nextIndex()} />;
             }
             return relevanceEvent ? <SkeletonCard key={dim} /> : null;
           })}
@@ -1716,6 +1716,6 @@ git commit --allow-empty -m "chore: 高考模式 7 维度端到端验收通过"
 - `EssayState._mode`: `state.ts` 字段名,`useGradingStream.run` 入参 `_mode: mode` (Task 8),`nodes.ts` 读取 `state._mode ?? "standard"` (Task 6)
 - `getDimensions(mode)` 返回 `readonly Dim[]`,`getWeights(mode)` 返回 `Map<string, number>` (Task 2)
 - `NODE_NAMES.CONTENT/DEPTH/NOVELTY/FORMATTING` (Task 3) 与 `nodes.ts` 中 `check_content/check_depth/check_novelty/check_formatting` (Task 6) 字符串一致
-- `getLabel(node)` (Task 2) 与 GradingPage (Task 12) 调用一致
+- `getLabel(node, mode)` (Task 2, mode-aware) 与 GradingPage (Task 12) 调用一致
 
 **无占位符**: 已检查 — 所有代码块完整,所有命令明确。
