@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+### Added
+- 顶栏右上角加入作者二维码 (`public/二维码.png`) 及「扫码可以加作者，支持一下」提示，点击放大查看；移动端自适应为横向排布
+
 ### Changed
 - **配置**: 默认 LLM 连接信息（含 API Key）外置到 `src/config/llm-defaults.json`，新用户首次访问无需任何配置即可使用；老用户 localStorage 中的自定义配置仍然优先
 - **重构**: 整个项目从 Python (FastAPI + LangGraph) 迁移到 TypeScript (Vite + React)

@@ -28,9 +28,21 @@ export function Header({ title, subtitle, quota, quotaExhausted = false }: Props
           </span>
         )}
       </div>
-      <Link to="/settings" className="icon-btn" aria-label="设置">
-        设置
-      </Link>
+      <div className="app-header-right">
+        <a
+          className="app-header-qr"
+          href="二维码.png"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="扫码加作者"
+        >
+          <img src="二维码.png" alt="作者二维码" />
+          <span className="app-header-qr-tip">扫码可以加作者，支持一下</span>
+        </a>
+        <Link to="/settings" className="icon-btn" aria-label="设置">
+          设置
+        </Link>
+      </div>
     </div>
   );
 }
