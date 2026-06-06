@@ -69,6 +69,7 @@ export function GradingPage() {
     | undefined;
 
   function handleSubmit(topic: string, essay: string) {
+    // 语义:点「开始评分」即扣费,LLM 失败不退回(防止恶意重试刷量)
     increment();
     run({ topic, essay }).catch((err) => alert(`评分请求失败: ${err.message ?? err}`));
   }
