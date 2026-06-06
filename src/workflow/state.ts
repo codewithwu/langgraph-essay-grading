@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Annotation } from "@langchain/langgraph";
+import type { Mode } from "../lib/mode-storage";
 
 export const ScoreDetail = z.object({
   score: z.number().min(0).max(1),
@@ -11,6 +12,7 @@ export type ScoreDetail = z.infer<typeof ScoreDetail>;
 export const EssayState = Annotation.Root({
   topic: Annotation<string>(),
   essay: Annotation<string>(),
+  _mode: Annotation<Mode>(),
   relevance: Annotation<ScoreDetail>(),
   evidence: Annotation<ScoreDetail>(),
   structure: Annotation<ScoreDetail>(),
