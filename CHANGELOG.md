@@ -13,6 +13,9 @@
 ### Removed
 - `src/workflow/config.ts` 中已迁出的 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 权重常量
 
+### Fixed
+- `tests/workflow/prompts.test.ts` 适配 `SYSTEM_PROMPT` 重命名为 `STANDARD_SYSTEM_PROMPT`（import 与 `describe` 块同步更新）
+
 ### Changed
 - 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」
 - README.md 项目名由「高考作文评分系统 | Gaokao Essay Grading System」改为「作文评分智能体 | Essay Grading Agent」
