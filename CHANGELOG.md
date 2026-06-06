@@ -4,6 +4,7 @@
 
 ### Added
 - **高考作文模式**: 新增 `src/lib/mode-storage.ts` 模块,在 localStorage (`grading-mode-v1`) 中读写评分模式 `standard | gaokao`,默认 `gaokao`;读取失败/非法值时回退默认并 `console.warn`,写入失败时静默忽略
+- **高考作文模式**: 新增 `src/workflow/dimensions.ts` 模块,集中管理两种模式下的评分维度(`STANDARD_DIMS` 4 项 / `GAOKAO_DIMS` 7 项),提供 `getDimensions(mode)` / `getWeights(mode)` / `getLabel(node)` 查询接口;standard 权重 0.3/0.2/0.2/0.3,gaokao 各维度等权 `1/7`
 
 ### Changed
 - 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」
