@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { SYSTEM_PROMPT, buildPrompt } from "../../src/workflow/prompts";
+import { STANDARD_SYSTEM_PROMPT, buildPrompt } from "../../src/workflow/prompts";
 
 const TestSchema = z.object({
   score: z.number(),
@@ -25,12 +25,12 @@ describe("buildPrompt", () => {
   });
 });
 
-describe("SYSTEM_PROMPT", () => {
+describe("STANDARD_SYSTEM_PROMPT", () => {
   it("mentions 高考", () => {
-    expect(SYSTEM_PROMPT).toContain("高考");
+    expect(STANDARD_SYSTEM_PROMPT).toContain("高考");
   });
 
   it("specifies score range 0~1", () => {
-    expect(SYSTEM_PROMPT).toMatch(/0[~～-]1|0\s*到\s*1/);
+    expect(STANDARD_SYSTEM_PROMPT).toMatch(/0[~～-]1|0\s*到\s*1/);
   });
 });
