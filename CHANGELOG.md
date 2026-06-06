@@ -8,6 +8,7 @@
 
 ### Changed
 - **配置**: `src/workflow/config.ts` 中 `NODE_NAMES` 扩展,新增 4 个高考专属节点名 (`check_content` / `check_depth` / `check_novelty` / `check_formatting`);同步移除 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 四个常量（已迁入 `dimensions.ts`）
+- **prompt**: `src/workflow/prompts.ts` 中将原 `SYSTEM_PROMPT` 拆为 `STANDARD_SYSTEM_PROMPT`(4 维,沿用旧文)与 `GAOKAO_SYSTEM_PROMPT`(7 维,内联高考 60 分制评分标准、扣分细则、残篇评定)两套,新增 `getSystemPrompt(mode)` 选择器;`buildPrompt` 保持不变
 
 ### Removed
 - `src/workflow/config.ts` 中已迁出的 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 权重常量
