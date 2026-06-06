@@ -512,6 +512,127 @@ select option {
   color: var(--ink-soft);
 }
 
+/* ================================================================
+   模式切换 — segmented control
+   ================================================================ */
+
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 10px 14px;
+  background: rgba(255, 252, 244, 0.45);
+  border: var(--hairline) solid var(--line);
+  border-radius: var(--radius-md);
+}
+
+.mode-toggle-label {
+  font-family: var(--serif);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  letter-spacing: 0.12em;
+  flex-shrink: 0;
+}
+
+.mode-toggle-label::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 12px;
+  background: var(--vermillion);
+  border-radius: 1px;
+  margin-right: 8px;
+  vertical-align: -1px;
+}
+
+.mode-toggle-pills {
+  display: flex;
+  gap: 0;
+  background: var(--paper-2);
+  border: var(--hairline) solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  position: relative;
+  flex: 1;
+}
+
+.mode-toggle-pill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 2px;
+  cursor: pointer;
+  font-family: var(--serif);
+  color: var(--ash);
+  transition: color var(--duration) var(--ease), background var(--duration) var(--ease);
+  position: relative;
+}
+
+.mode-toggle-pill:hover:not(:disabled):not(.active) {
+  color: var(--ink-soft);
+  background: rgba(184, 54, 43, 0.04);
+}
+
+.mode-toggle-pill.active {
+  background: var(--paper);
+  color: var(--vermillion);
+  box-shadow: var(--shadow-sm);
+}
+
+.mode-toggle-pill.active::after {
+  content: "";
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 4px;
+  height: 2px;
+  background: var(--vermillion);
+  border-radius: 1px;
+}
+
+.mode-toggle-pill:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.mode-toggle-pill-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+
+.mode-toggle-pill-hint {
+  font-family: var(--number);
+  font-size: 10.5px;
+  color: var(--ash-2);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mode-toggle-pill.active .mode-toggle-pill-hint {
+  color: var(--vermillion);
+  opacity: 0.7;
+}
+
+@media (max-width: 540px) {
+  .mode-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .mode-toggle-pills {
+    width: 100%;
+  }
+}
+
 /* 字符计数 */
 .char-counter {
   position: absolute;

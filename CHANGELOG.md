@@ -5,6 +5,7 @@
 ### Added
 - **高考作文模式**: 新增 `src/lib/mode-storage.ts` 模块,在 localStorage (`grading-mode-v1`) 中读写评分模式 `standard | gaokao`,默认 `gaokao`;读取失败/非法值时回退默认并 `console.warn`,写入失败时静默忽略
 - **高考作文模式**: 新增 `src/workflow/dimensions.ts` 模块,集中管理两种模式下的评分维度(`STANDARD_DIMS` 4 项 / `GAOKAO_DIMS` 7 项),提供 `getDimensions(mode)` / `getWeights(mode)` / `getLabel(node)` 查询接口;standard 权重 0.3/0.2/0.2/0.3,gaokao 各维度等权 `1/7`
+- **高考作文模式**: `src/styles/index.css` 中加入 ModeToggle segmented 控件样式（宣纸底 + 朱砂下划线 active 态、`@media (max-width: 540px)` 垂直堆叠）
 
 ### Changed
 - **配置**: `src/workflow/config.ts` 中 `NODE_NAMES` 扩展,新增 4 个高考专属节点名 (`check_content` / `check_depth` / `check_novelty` / `check_formatting`);同步移除 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 四个常量（已迁入 `dimensions.ts`）
