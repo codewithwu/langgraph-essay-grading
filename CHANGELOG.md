@@ -21,6 +21,7 @@
 
 ### Fixed
 - **配额绕过**: `GradingPage.handleSubmit` 增加 `if (exhausted) return` 短路,防止 Enter 键在 disabled 按钮之外触发 `run` 调用并绕过配额
+- **评分 prompt 措辞**: 细化 `src/workflow/prompts.ts` 系统 prompt(参考高考语文作文"基础等级"与发展等级"两项),扩展 `src/workflow/nodes.ts` 各维度指令(明确维度名称、加分论点、论证方法、篇章结构、语言表达的关注重点)
 
 ### Changed
 - 头栏 `.app-header-quota.exhausted` 改用 `--vermillion` / `--vermillion-ink` 令牌,与全局朱砂主题保持一致
