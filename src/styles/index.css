@@ -272,8 +272,8 @@ h1 .wordmark-seal::after {
   color: #555;
 }
 .app-header-quota.exhausted {
-  background: rgba(185, 74, 72, 0.12);
-  color: #b94a48;
+  background: var(--vermillion-ink);
+  color: var(--vermillion);
 }
 
 /* ================================================================
