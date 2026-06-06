@@ -7,6 +7,12 @@
 - **高考作文模式**: 新增 `src/workflow/dimensions.ts` 模块,集中管理两种模式下的评分维度(`STANDARD_DIMS` 4 项 / `GAOKAO_DIMS` 7 项),提供 `getDimensions(mode)` / `getWeights(mode)` / `getLabel(node)` 查询接口;standard 权重 0.3/0.2/0.2/0.3,gaokao 各维度等权 `1/7`
 
 ### Changed
+- **配置**: `src/workflow/config.ts` 中 `NODE_NAMES` 扩展,新增 4 个高考专属节点名 (`check_content` / `check_depth` / `check_novelty` / `check_formatting`);同步移除 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 四个常量（已迁入 `dimensions.ts`）
+
+### Removed
+- `src/workflow/config.ts` 中已迁出的 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 权重常量
+
+### Changed
 - 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」
 - README.md 项目名由「高考作文评分系统 | Gaokao Essay Grading System」改为「作文评分智能体 | Essay Grading Agent」
 
