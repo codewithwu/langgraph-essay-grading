@@ -1,0 +1,5 @@
+{
+  "apiKey": "sk-studio-2722acfd3da941e4b2f1326802c5d7d3",
+  "baseUrl": "https://api.tbox.cn/api/llm/v1/",
+  "modelName": "Ling-2.6-1T"
+}

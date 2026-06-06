@@ -30,4 +30,10 @@ describe("settings", () => {
     saveSettings(s);
     expect(loadSettings()).toEqual(s);
   });
+
+  it("default settings is loaded from JSON with all fields populated", () => {
+    expect(DEFAULT_SETTINGS.apiKey).toMatch(/^sk-/);
+    expect(DEFAULT_SETTINGS.baseUrl).toBe("https://api.tbox.cn/api/llm/v1/");
+    expect(DEFAULT_SETTINGS.modelName).toBe("Ling-2.6-1T");
+  });
 });

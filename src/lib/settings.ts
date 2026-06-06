@@ -1,3 +1,5 @@
+import defaults from "../config/llm-defaults.json";
+
 const STORAGE_KEY = "grading-settings-v1";
 
 export type Settings = {
@@ -6,11 +8,7 @@ export type Settings = {
   modelName: string;
 };
 
-export const DEFAULT_SETTINGS: Settings = {
-  apiKey: "",
-  baseUrl: "https://api.tbox.cn/api/llm/v1/",
-  modelName: "Ling-2.6-1T",
-};
+export const DEFAULT_SETTINGS: Settings = defaults;
 
 export function loadSettings(): Settings {
   try {
