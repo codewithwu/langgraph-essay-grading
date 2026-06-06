@@ -17,6 +17,8 @@
 ### Fixed
 - `tests/workflow/prompts.test.ts` 适配 `SYSTEM_PROMPT` 重命名为 `STANDARD_SYSTEM_PROMPT`（import 与 `describe` 块同步更新）
 - `src/workflow/nodes.ts` `DIM_INSTRUCTIONS` 类型由 `Record<Mode, Record<Dim, string>>` 改为 `Record<Mode, Partial<Record<Dim, string>>>`，允许两种模式拥有不同维度子集（standard 4 项 / gaokao 7 项）；`gradeDim` 中以非空断言 `!` 访问（由图拓扑保证调用合法）
+- `tests/hooks/useGradingStream.test.ts` 与 `tests/pages/GradingPage.test.tsx` 的 `vi.mock` 工厂适配新的 `getGraph(mode)` API（旧 `graph` 直接 mock 已无法命中），useGradingStream 测试通过 `vi.hoisted` 规避顶层变量初始化顺序问题；`run()` 调用统一传入 `{ mode, topic, essay }`
+- `tests/pages/GradingPage.test.tsx` 新增「GradingPage 模式集成」5 个用例：默认 `gaokao`、切换至 `standard` 后 `getGraph` 收到 `standard`、`gaokao` 模式下 `getGraph` 收到 `gaokao`、模式写入 `localStorage`、已保存的 mode 加载时高亮对应按钮
 
 ### Changed
 - 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」
