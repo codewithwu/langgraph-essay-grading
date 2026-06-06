@@ -7,9 +7,11 @@ import { ScoreCard } from "../components/ScoreCard";
 import { SkeletonCard } from "../components/SkeletonCard";
 import { FinalScoreCard } from "../components/FinalScoreCard";
 import { useGradingStream } from "../hooks/useGradingStream";
+import { useQuota } from "../hooks/useQuota";
 import { loadSettings } from "../lib/settings";
 import type { ScoreDetail } from "../workflow/state";
 import { NODE_NAMES } from "../workflow/config";
+import { QUOTA_LIMIT } from "../hooks/useQuota";
 
 const NODE_LABELS: Record<string, string> = {
   [NODE_NAMES.RELEVANCE]: "审题立意",
@@ -47,6 +49,7 @@ function extractScoreDetail(node: string, update: Record<string, unknown>): Scor
 export function GradingPage() {
   const navigate = useNavigate();
   const { events, done, running, run } = useGradingStream();
+  const { used, exhausted, increment } = useQuota();
 
   useEffect(() => {
     if (!loadSettings().apiKey) navigate("/settings", { replace: true });
@@ -66,6 +69,7 @@ export function GradingPage() {
     | undefined;
 
   function handleSubmit(topic: string, essay: string) {
+    increment();
     run({ topic, essay }).catch((err) => alert(`评分请求失败: ${err.message ?? err}`));
   }
 
@@ -76,9 +80,14 @@ export function GradingPage() {
 
   return (
     <div className="container">
-      <Header title="高考作文评分系统" subtitle="基于 LangGraph 的多维度智能评分" />
+      <Header
+        title="高考作文评分系统"
+        subtitle="基于 LangGraph 的多维度智能评分"
+        quota={exhausted ? `已达上限(${QUOTA_LIMIT}/${QUOTA_LIMIT})` : `已用 ${used}/${QUOTA_LIMIT}`}
+        quotaExhausted={exhausted}
+      />
 
-      <FormSection disabled={running} onSubmit={handleSubmit} />
+      <FormSection disabled={running} onSubmit={handleSubmit} quotaExhausted={exhausted} />
       <LoadingBar visible={running} text={done ? "评分完成" : latestLoadingText} />
 
       <div className={`results-section ${showResults ? "active" : ""}`}>
