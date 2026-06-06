@@ -3,55 +3,22 @@
 ## [Unreleased]
 
 ### Added
-- **高考作文模式**: 新增 `src/lib/mode-storage.ts` 模块,在 localStorage (`grading-mode-v1`) 中读写评分模式 `standard | gaokao`,默认 `gaokao`;读取失败/非法值时回退默认并 `console.warn`,写入失败时静默忽略
-- **高考作文模式**: 新增 `src/workflow/dimensions.ts` 模块,集中管理两种模式下的评分维度(`STANDARD_DIMS` 4 项 / `GAOKAO_DIMS` 7 项),提供 `getDimensions(mode)` / `getWeights(mode)` / `getLabel(node)` 查询接口;standard 权重 0.3/0.2/0.2/0.3,gaokao 各维度等权 `1/7`
-- **高考作文模式**: `src/styles/index.css` 中加入 ModeToggle segmented 控件样式（宣纸底 + 朱砂下划线 active 态、`@media (max-width: 540px)` 垂直堆叠）
+- **高考作文模式** (gaokao mode): 首页 FormSection 顶部新增「标准模式 / 高考模式」切换按钮;开启后,评分工作流从 4 维度升级为 7 维度(审题立意 / 内容论据 / 篇章结构 / 语言文采 / 思想深度 / 创新创意 / 卷面格式),全面对齐 w.md 评分细则中的「基础等级 + 发展等级 + 扣分细则」;总分仍以 1.00 满分,各维度等权 1/7。系统 prompt 拆为 standard / gaokao 两套,gaokao 套内化 60 分制五等评分 + 16 点特征 + 扣分细则。模式选择持久化于 `localStorage: grading-mode-v1`,默认 `gaokao`。
+  - 新增模块: `src/lib/mode-storage.ts` (localStorage 读写,含默认值与非法值/抛错兜底)、`src/workflow/dimensions.ts` (维度/权重/标签集中管理,提供 `getDimensions(mode)` / `getWeights(mode)` / `getLabel(node, mode)` 接口)、`src/components/ModeToggle.tsx` (segmented 控件)
+  - 编译双 graph: `src/workflow/graph.ts` 中分别编译 `standardGraph` (3 维并行) 与 `gaokaoGraph` (6 维并行),通过 `getGraph(mode)` 选择
+  - 状态扩展: `EssayState` 新增 `content / depth / novelty / formatting` 4 个 gaokao 字段 + `_mode` 路由字段
+  - 集成测试: `tests/pages/GradingPage.test.tsx` 新增 5 个模式相关用例 (默认/切换/路由/持久化/加载)
 
 ### Changed
-- **配置**: `src/workflow/config.ts` 中 `NODE_NAMES` 扩展,新增 4 个高考专属节点名 (`check_content` / `check_depth` / `check_novelty` / `check_formatting`);同步移除 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 四个常量（已迁入 `dimensions.ts`）
-- **prompt**: `src/workflow/prompts.ts` 中将原 `SYSTEM_PROMPT` 拆为 `STANDARD_SYSTEM_PROMPT`(4 维,沿用旧文)与 `GAOKAO_SYSTEM_PROMPT`(7 维,内联高考 60 分制评分标准、扣分细则、残篇评定)两套,新增 `getSystemPrompt(mode)` 选择器;`buildPrompt` 保持不变
+- **配置**: `src/workflow/config.ts` 中 `NODE_NAMES` 扩展,新增 4 个高考专属节点名;同步移除 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 4 个权重常量（已迁入 `dimensions.ts`）
+- **prompt**: `src/workflow/prompts.ts` 中将原 `SYSTEM_PROMPT` 拆为 `STANDARD_SYSTEM_PROMPT` (4 维,沿用旧文) 与 `GAOKAO_SYSTEM_PROMPT` (7 维,内联高考 60 分制评分标准、扣分细则、残篇评定) 两套,新增 `getSystemPrompt(mode)` 选择器
+- **API**: `useGradingStream.run` 签名扩展为接受 `mode: Mode` 参数,新增 `reset()` 方法供模式切换时清空旧 events
+- 默认评分模式从「标准模式」改为「高考模式」
 
 ### Removed
-- `src/workflow/config.ts` 中已迁出的 `WEIGHT_RELEVANCE` / `WEIGHT_EVIDENCE` / `WEIGHT_STRUCTURE` / `WEIGHT_EXPRESSION` 权重常量
+- `src/workflow/config.ts` 中已迁出的 4 个 `WEIGHT_*` 权重常量
 
 ### Fixed
-- `tests/workflow/prompts.test.ts` 适配 `SYSTEM_PROMPT` 重命名为 `STANDARD_SYSTEM_PROMPT`（import 与 `describe` 块同步更新）
-- `src/workflow/nodes.ts` `DIM_INSTRUCTIONS` 类型由 `Record<Mode, Record<Dim, string>>` 改为 `Record<Mode, Partial<Record<Dim, string>>>`，允许两种模式拥有不同维度子集（standard 4 项 / gaokao 7 项）；`gradeDim` 中以非空断言 `!` 访问（由图拓扑保证调用合法）
-- `tests/hooks/useGradingStream.test.ts` 与 `tests/pages/GradingPage.test.tsx` 的 `vi.mock` 工厂适配新的 `getGraph(mode)` API（旧 `graph` 直接 mock 已无法命中），useGradingStream 测试通过 `vi.hoisted` 规避顶层变量初始化顺序问题；`run()` 调用统一传入 `{ mode, topic, essay }`
-- `tests/pages/GradingPage.test.tsx` 新增「GradingPage 模式集成」5 个用例：默认 `gaokao`、切换至 `standard` 后 `getGraph` 收到 `standard`、`gaokao` 模式下 `getGraph` 收到 `gaokao`、模式写入 `localStorage`、已保存的 mode 加载时高亮对应按钮
-
-### Changed
-- 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」
-- README.md 项目名由「高考作文评分系统 | Gaokao Essay Grading System」改为「作文评分智能体 | Essay Grading Agent」
-
-### Added
-- 顶栏右上角加入作者二维码 (`public/二维码.png`) 及「扫码可以加作者，支持一下」提示，点击放大查看；移动端自适应为横向排布
-
-### Changed
-- **配置**: 默认 LLM 连接信息（含 API Key）外置到 `src/config/llm-defaults.json`，新用户首次访问无需任何配置即可使用；老用户 localStorage 中的自定义配置仍然优先
-- **重构**: 整个项目从 Python (FastAPI + LangGraph) 迁移到 TypeScript (Vite + React)
-- **架构**: 从后端 + 前端架构改为纯前端 SPA，LLM API Key 由用户在浏览器内配置
-- **部署目标**: 改为 GitHub Pages 静态部署
-- **UI**: 重新设计为「墨韵」现代中式编辑美学——宣纸底色 + 墨黑主文 + 朱砂印章强调；引入 Noto Serif SC / Noto Sans SC / Inter / Ma Shan Zheng 字体系统；评分卡加入序号徽章、悬浮抬升、综合分改为盖印式印章（带印泥噪点纹理与微抖动动画）
-
-### Added
-- React + TypeScript 前端
-- `/settings` 页面管理 LLM 连接信息（API Key / BaseURL / 模型名），存于 localStorage
-- GitHub Actions 自动部署到 gh-pages
-- Vitest 单元测试覆盖 settings / state / prompts / routes / graph / hook
-- 内置 10 道 2008-2018 年高考作文题（`src/data/articles.md`），GradingPage 作文题目输入框上方支持下拉选择并回填
-- 体验提升：表单实时字符计数、按钮 hover 朱砂流光与右移箭头、加载态墨滴落入动画、卡片按维度序号 stagger reveal、印章盖下弹跳动效、自定义朱砂滚动条与选区配色
-- **额度限制**: 每个浏览器 localStorage 累计只能使用「开始评分」10 次,达到上限后按钮置灰并提示;通过 `src/lib/quota.ts` + `src/hooks/useQuota.ts` 实现,头/表单区持续显示「已用 X/10」
-- 集成测试 `tests/pages/GradingPage.test.tsx`: 验证配额耗尽时 `run` 不被调用,锁定 Enter 键短路修复
-
-### Fixed
-- **配额绕过**: `GradingPage.handleSubmit` 增加 `if (exhausted) return` 短路,防止 Enter 键在 disabled 按钮之外触发 `run` 调用并绕过配额
-- **评分 prompt 措辞**: 细化 `src/workflow/prompts.ts` 系统 prompt(参考高考语文作文"基础等级"与发展等级"两项),扩展 `src/workflow/nodes.ts` 各维度指令(明确维度名称、加分论点、论证方法、篇章结构、语言表达的关注重点)
-
-### Changed
-- 头栏 `.app-header-quota.exhausted` 改用 `--vermillion` / `--vermillion-ink` 令牌,与全局朱砂主题保持一致
-
-### Removed
-- 全部 Python 源码（langgraph_essay_grading、langchain_agent、FastAPI 服务层）
-- Python Notebook、pyproject.toml、uv.lock、.venv
-- .env（API Key 改由前端用户配置）
+- `src/workflow/nodes.ts` 中 `DIM_INSTRUCTIONS` 类型由 `Record<Mode, Record<Dim, string>>` 改为 `Record<Mode, Partial<Record<Dim, string>>>`,允许两种模式拥有不同维度子集;`gradeDim` 中以非空断言 `!` 访问（由图拓扑保证调用合法）
+- `tests/workflow/prompts.test.ts` 适配 `SYSTEM_PROMPT` 重命名为 `STANDARD_SYSTEM_PROMPT`
+- `tests/hooks/useGradingStream.test.ts` 与 `tests/pages/GradingPage.test.tsx` 的 `vi.mock` 工厂适配新的 `getGraph(mode)` API,`run()` 调用统一传入 `{ mode, topic, essay }`
