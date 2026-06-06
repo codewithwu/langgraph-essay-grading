@@ -1,13 +1,23 @@
 import { useState, type FormEvent } from "react";
 import { ARTICLES } from "../lib/articles";
+import { ModeToggle } from "./ModeToggle";
+import type { Mode } from "../lib/mode-storage";
 
 type Props = {
   disabled: boolean;
   onSubmit: (topic: string, essay: string) => void;
   quotaExhausted?: boolean;
+  mode: Mode;
+  onModeChange: (mode: Mode) => void;
 };
 
-export function FormSection({ disabled, onSubmit, quotaExhausted = false }: Props) {
+export function FormSection({
+  disabled,
+  onSubmit,
+  quotaExhausted = false,
+  mode,
+  onModeChange,
+}: Props) {
   const [topic, setTopic] = useState("");
   const [essay, setEssay] = useState("");
   const [selectedArticleId, setSelectedArticleId] = useState("");
@@ -32,6 +42,7 @@ export function FormSection({ disabled, onSubmit, quotaExhausted = false }: Prop
 
   return (
     <form className="form-section" onSubmit={handleSubmit}>
+      <ModeToggle mode={mode} onChange={onModeChange} disabled={disabled} />
       <div className="form-group">
         <label htmlFor="topic">作文题目</label>
         <select
