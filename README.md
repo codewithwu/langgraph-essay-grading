@@ -37,12 +37,12 @@ npm run dev          # 访问 http://localhost:5173
 ## 使用流程
 
 1. 打开页面，**默认已连通百灵 `Ling-2.6-1T`，可直接跳到第 5 步开始评分**
-2. (可选)若需替换 provider，右上角点「设置」，修改 API Key / BaseURL / 模型名
+2. （可选）若需替换 provider，右上角点「设置」，修改 API Key / BaseURL / 模型名
 3. 点「测试连接」验证配置正确
 4. 点「保存」返回主页
 5. 输入作文题目与内容（或从下拉选择内置的历年高考题），点「开始评分」
 
-> **API Key 存于浏览器 localStorage**，不进任何后端。建议使用额度受限的次级 Key。
+> **API Key 仅存于浏览器**（默认从打包的 JSON 读取；用户在设置页保存的覆盖值存于 localStorage），不进任何后端。建议使用额度受限的次级 Key。
 
 ## 技术架构
 
@@ -92,7 +92,7 @@ npm run build         # 类型检查 + Vite 构建
 
 - ⚠️ API Key 一旦填入，任何能访问此浏览器的人都能看到
 - ⚠️ 部署到公开 GH Pages 后，访客使用自己的 Key 评分；但若 Key 泄露到日志或源码，会被盗刷
-- ✅ Key 仅存 localStorage，不进 git 仓库
+- ✅ 用户在设置页保存的覆盖 Key 仅存 localStorage，不进 git 仓库
 - ✅ 建议在 LLM provider 端设置月度额度上限
 - ⚠️ 当前仓库已预填演示用的百灵 API Key 到 `src/config/llm-defaults.json`,会随 GH Pages bundle 公开;若你 fork 本项目用于生产,请务必先把 JSON 替换为自己的私有 Key,并在 provider 后台设置月度额度上限
 

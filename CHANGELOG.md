@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Changed
-- **配置**: 默认 LLM 连接信息(含 API Key)外置到 `src/config/llm-defaults.json`,新用户首次访问无需任何配置即可使用;老用户 localStorage 中的自定义配置仍然优先
+- **配置**: 默认 LLM 连接信息（含 API Key）外置到 `src/config/llm-defaults.json`，新用户首次访问无需任何配置即可使用；老用户 localStorage 中的自定义配置仍然优先
 - **重构**: 整个项目从 Python (FastAPI + LangGraph) 迁移到 TypeScript (Vite + React)
 - **架构**: 从后端 + 前端架构改为纯前端 SPA，LLM API Key 由用户在浏览器内配置
 - **部署目标**: 改为 GitHub Pages 静态部署
