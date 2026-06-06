@@ -94,7 +94,7 @@ npm run build         # 类型检查 + Vite 构建
 - ⚠️ 部署到公开 GH Pages 后，访客使用自己的 Key 评分；但若 Key 泄露到日志或源码，会被盗刷
 - ✅ 用户在设置页保存的覆盖 Key 仅存 localStorage，不进 git 仓库
 - ✅ 建议在 LLM provider 端设置月度额度上限
-- ⚠️ 当前仓库已预填演示用的百灵 API Key 到 `src/config/llm-defaults.json`,会随 GH Pages bundle 公开;若你 fork 本项目用于生产,请务必先把 JSON 替换为自己的私有 Key,并在 provider 后台设置月度额度上限
+- ⚠️ 当前仓库已预填演示用的百灵 API Key 到 `src/config/llm-defaults.json`，会随 GH Pages bundle 公开；若你 fork 本项目用于生产，请务必先把 JSON 替换为自己的私有 Key，并在 provider 后台设置月度额度上限
 
 ## License
 
