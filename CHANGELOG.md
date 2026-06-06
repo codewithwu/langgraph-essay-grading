@@ -15,6 +15,7 @@
 
 ### Fixed
 - `tests/workflow/prompts.test.ts` 适配 `SYSTEM_PROMPT` 重命名为 `STANDARD_SYSTEM_PROMPT`（import 与 `describe` 块同步更新）
+- `src/workflow/nodes.ts` `DIM_INSTRUCTIONS` 类型由 `Record<Mode, Record<Dim, string>>` 改为 `Record<Mode, Partial<Record<Dim, string>>>`，允许两种模式拥有不同维度子集（standard 4 项 / gaokao 7 项）；`gradeDim` 中以非空断言 `!` 访问（由图拓扑保证调用合法）
 
 ### Changed
 - 首页顶栏标题由「高考作文评分系统」改为「作文评分智能体」

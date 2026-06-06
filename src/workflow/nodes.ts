@@ -14,7 +14,7 @@ type Dim =
   | "novelty"
   | "formatting";
 
-const DIM_INSTRUCTIONS: Record<Mode, Record<Dim, string>> = {
+const DIM_INSTRUCTIONS: Record<Mode, Partial<Record<Dim, string>>> = {
   standard: {
     relevance: "请评估以下高考作文的「审题立意」维度。考察是否紧扣题目材料、中心是否明确、立意是否深刻、是否有独到见解。重点关注是否切题、是否扣题写作，以及立意的高度与深度。",
     evidence: "请评估以下高考作文的「论据分析」维度。考察材料是否充实、论据是否典型、论证是否有力、事例与观点是否一致。议论文重点看论证方法（举例、对比、比喻、类比等）是否有效；记叙文或散文则看细节、情感是否支撑主旨。",
@@ -41,7 +41,7 @@ async function gradeDim(
   const messages = [
     new SystemMessage(buildPrompt(ScoreDetail) + getSystemPrompt(mode)),
     new HumanMessage(
-      `${DIM_INSTRUCTIONS[mode][dim]}\n给出 0 到 1 之间的分数，并说明理由。\n\n题目：${state.topic}\n\n作文：${state.essay}`,
+      `${DIM_INSTRUCTIONS[mode][dim]!}\n给出 0 到 1 之间的分数，并说明理由。\n\n题目：${state.topic}\n\n作文：${state.essay}`,
     ),
   ];
   return { [dim]: await llm.invoke(messages) } as Partial<EssayStateType>;
