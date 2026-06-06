@@ -4,9 +4,10 @@ import { ARTICLES } from "../lib/articles";
 type Props = {
   disabled: boolean;
   onSubmit: (topic: string, essay: string) => void;
+  quotaExhausted?: boolean;
 };
 
-export function FormSection({ disabled, onSubmit }: Props) {
+export function FormSection({ disabled, onSubmit, quotaExhausted = false }: Props) {
   const [topic, setTopic] = useState("");
   const [essay, setEssay] = useState("");
   const [selectedArticleId, setSelectedArticleId] = useState("");
@@ -69,8 +70,13 @@ export function FormSection({ disabled, onSubmit }: Props) {
           <strong>{essay.length}</strong> 字
         </span>
       </div>
-      <button type="submit" className="btn-submit" disabled={disabled}>
-        {disabled ? "评分中" : "开始评分"}
+      <button
+        type="submit"
+        className="btn-submit"
+        disabled={disabled || quotaExhausted}
+        title={quotaExhausted ? "免费次数已用完,清空浏览器数据可重置" : undefined}
+      >
+        {quotaExhausted ? "次数已用完" : disabled ? "评分中" : "开始评分"}
       </button>
     </form>
   );
