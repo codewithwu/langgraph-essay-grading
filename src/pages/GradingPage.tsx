@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Header } from "../components/Header";
 import { FormSection } from "../components/FormSection";
@@ -12,13 +12,8 @@ import { loadSettings } from "../lib/settings";
 import type { ScoreDetail } from "../workflow/state";
 import { NODE_NAMES } from "../workflow/config";
 import { QUOTA_LIMIT } from "../hooks/useQuota";
-
-const NODE_LABELS: Record<string, string> = {
-  [NODE_NAMES.RELEVANCE]: "审题立意",
-  [NODE_NAMES.EVIDENCE]: "论据分析",
-  [NODE_NAMES.STRUCTURE]: "结构评估",
-  [NODE_NAMES.EXPRESSION]: "语言文采",
-};
+import { getLabel } from "../workflow/dimensions";
+import { loadMode, saveMode, type Mode } from "../lib/mode-storage";
 
 const LOADING_TEXTS: Record<string, string> = {
   [NODE_NAMES.RELEVANCE]: "智能体正在审题...",
@@ -26,10 +21,27 @@ const LOADING_TEXTS: Record<string, string> = {
   [NODE_NAMES.EVIDENCE]: "正在分析论据...",
   [NODE_NAMES.STRUCTURE]: "正在评估结构...",
   [NODE_NAMES.EXPRESSION]: "正在鉴赏语言...",
+  [NODE_NAMES.CONTENT]: "正在分析内容与论据...",
+  [NODE_NAMES.DEPTH]: "正在评估思想深度...",
+  [NODE_NAMES.NOVELTY]: "正在评估创新创意...",
+  [NODE_NAMES.FORMATTING]: "正在检查卷面格式...",
   [NODE_NAMES.CALCULATE]: "正在计算综合评分...",
 };
 
-const PARALLEL_DIMS = [NODE_NAMES.EVIDENCE, NODE_NAMES.STRUCTURE, NODE_NAMES.EXPRESSION] as const;
+const GAOKAO_PARALLEL = [
+  NODE_NAMES.CONTENT,
+  NODE_NAMES.STRUCTURE,
+  NODE_NAMES.EXPRESSION,
+  NODE_NAMES.DEPTH,
+  NODE_NAMES.NOVELTY,
+  NODE_NAMES.FORMATTING,
+] as const;
+
+const STANDARD_PARALLEL = [
+  NODE_NAMES.EVIDENCE,
+  NODE_NAMES.STRUCTURE,
+  NODE_NAMES.EXPRESSION,
+] as const;
 
 function extractScoreDetail(node: string, update: Record<string, unknown>): ScoreDetail | null {
   const key = node.replace("check_", "");
@@ -48,12 +60,18 @@ function extractScoreDetail(node: string, update: Record<string, unknown>): Scor
 
 export function GradingPage() {
   const navigate = useNavigate();
-  const { events, done, running, run } = useGradingStream();
+  const { events, done, running, run, reset } = useGradingStream();
   const { used, exhausted, increment } = useQuota();
+  const [mode, setMode] = useState<Mode>(() => loadMode());
 
   useEffect(() => {
     if (!loadSettings().apiKey) navigate("/settings", { replace: true });
   }, [navigate]);
+
+  useEffect(() => {
+    saveMode(mode);
+    reset();
+  }, [mode, reset]);
 
   const latestLoadingText = useMemo(() => {
     for (let i = events.length - 1; i >= 0; i--) {
@@ -68,12 +86,17 @@ export function GradingPage() {
     | { final_score?: number }
     | undefined;
 
+  const parallelDims = mode === "gaokao" ? GAOKAO_PARALLEL : STANDARD_PARALLEL;
+
+  function handleModeChange(next: Mode) {
+    if (running) return;
+    setMode(next);
+  }
+
   function handleSubmit(topic: string, essay: string) {
-    // 语义:点「开始评分」即扣费,LLM 失败不退回(防止恶意重试刷量)
-    // 配额耗尽时短路:即使 Enter 键绕过 disabled 的提交按钮,run() 也不会被调用
     if (exhausted) return;
     increment();
-    run({ topic, essay }).catch((err) => alert(`评分请求失败: ${err.message ?? err}`));
+    run({ mode, topic, essay }).catch((err) => alert(`评分请求失败: ${err.message ?? err}`));
   }
 
   const showResults = events.length > 0;
@@ -90,27 +113,39 @@ export function GradingPage() {
         quotaExhausted={exhausted}
       />
 
-      <FormSection disabled={running} onSubmit={handleSubmit} quotaExhausted={exhausted} />
+      <FormSection
+        disabled={running}
+        onSubmit={handleSubmit}
+        quotaExhausted={exhausted}
+        mode={mode}
+        onModeChange={handleModeChange}
+      />
       <LoadingBar visible={running} text={done ? "评分完成" : latestLoadingText} />
 
       <div className={`results-section ${showResults ? "active" : ""}`}>
         {showResults && (
           <h2 className="section-title">
-            <span>多维度评分</span>
-            <small>DIMENSIONAL ANALYSIS</small>
+            <span>{mode === "gaokao" ? "高考模式 · 多维度评分" : "多维度评分"}</span>
+            <small>{mode === "gaokao" ? "GAOKAO MODE" : "DIMENSIONAL ANALYSIS"}</small>
           </h2>
         )}
         <div className="score-grid">
           {relevanceEvent && (() => {
             const d = extractScoreDetail(NODE_NAMES.RELEVANCE, relevanceEvent.update);
-            return d ? <ScoreCard title={NODE_LABELS[NODE_NAMES.RELEVANCE]} detail={d} index={nextIndex()} /> : null;
+            return d ? (
+              <ScoreCard
+                title={getLabel(NODE_NAMES.RELEVANCE, mode)}
+                detail={d}
+                index={nextIndex()}
+              />
+            ) : null;
           })()}
 
-          {PARALLEL_DIMS.map((dim) => {
+          {parallelDims.map((dim) => {
             const event = events.find((e) => e.node === dim);
             if (event) {
               const d = extractScoreDetail(dim, event.update);
-              if (d) return <ScoreCard key={dim} title={NODE_LABELS[dim]} detail={d} index={nextIndex()} />;
+              if (d) return <ScoreCard key={dim} title={getLabel(dim, mode)} detail={d} index={nextIndex()} />;
             }
             return relevanceEvent ? <SkeletonCard key={dim} /> : null;
           })}
