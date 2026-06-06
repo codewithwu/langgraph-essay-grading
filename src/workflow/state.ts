@@ -15,6 +15,10 @@ export const EssayState = Annotation.Root({
   evidence: Annotation<ScoreDetail>(),
   structure: Annotation<ScoreDetail>(),
   expression: Annotation<ScoreDetail>(),
+  content: Annotation<ScoreDetail>(),
+  depth: Annotation<ScoreDetail>(),
+  novelty: Annotation<ScoreDetail>(),
+  formatting: Annotation<ScoreDetail>(),
   final_score: Annotation<number>(),
 });
 
