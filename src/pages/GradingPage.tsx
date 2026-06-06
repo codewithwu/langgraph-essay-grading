@@ -84,7 +84,7 @@ export function GradingPage() {
   return (
     <div className="container">
       <Header
-        title="高考作文评分系统"
+        title="作文评分智能体"
         subtitle="基于 LangGraph 的多维度智能评分"
         quota={exhausted ? `已达上限(${QUOTA_LIMIT}/${QUOTA_LIMIT})` : `已用 ${used}/${QUOTA_LIMIT}`}
         quotaExhausted={exhausted}
