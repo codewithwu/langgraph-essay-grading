@@ -23,3 +23,6 @@
 - `tests/workflow/prompts.test.ts` 适配 `SYSTEM_PROMPT` 重命名为 `STANDARD_SYSTEM_PROMPT`
 - `tests/hooks/useGradingStream.test.ts` 与 `tests/pages/GradingPage.test.tsx` 的 `vi.mock` 工厂适配新的 `getGraph(mode)` API,`run()` 调用统一传入 `{ mode, topic, essay }`
 - 「卷面格式」维度 prompt 在实际运行中偶发给出 0 分且 `reason` 为空,UI 看不到任何扣分依据。`src/workflow/nodes.ts` 中 gaokao mode 的 `formatting` 维度指令重写:补充「高考 60 分制 → 0-1 分」评分映射表(1.00 / 0.85 / 0.70 / 0.55 四档锚点)以解决 LLM 扣分换算歧义;明确「0 仅在完全空白时使用」与 system prompt 0 分政策对齐;强制 `reason` 按「错别字 N 个 / 字数 实际 X 字 要求 Y 字 / 是否有标题 / 标点错误 N 处」结构化输出,杜绝空 reason。分数范围仍保持 0-1 全开,不收紧 schema 约束。
+
+### Added
+- 顶部 Header 在 QR 码下方新增「仓库地址」信息块 (`src/components/Header.tsx`),链接至 `https://github.com/codewithwu/langgraph-essay-grading`(URL 隐藏在 `href` + `aria-label`,视觉上只显示「仓库地址」四字)。视觉与 QR 码 block 保持统一的 paper 背景 + 淡墨边框 + hover 朱砂;块内使用「仓」字朱砂印章（与 H1 「墨」字印章呼应）+ 单行「仓库地址」墨色 serif 文字。`src/styles/index.css` 新增 `.app-header-repo` / `.app-header-repo-seal` / `.app-header-repo-text` 样式。

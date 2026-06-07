@@ -39,6 +39,16 @@ export function Header({ title, subtitle, quota, quotaExhausted = false }: Props
           <img src="二维码.png" alt="作者二维码" />
           <span className="app-header-qr-tip">扫码可以加作者，支持一下</span>
         </a>
+        <a
+          className="app-header-repo"
+          href="https://github.com/codewithwu/langgraph-essay-grading"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="访问 GitHub 仓库:codewithwu/langgraph-essay-grading"
+        >
+          <span className="app-header-repo-seal" aria-hidden="true">仓</span>
+          <span className="app-header-repo-text">仓库地址</span>
+        </a>
         <Link to="/settings" className="icon-btn" aria-label="设置">
           设置
         </Link>

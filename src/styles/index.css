@@ -321,6 +321,60 @@ h1 .wordmark-seal::after {
   letter-spacing: 0.02em;
 }
 
+.app-header-repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+  padding: 6px 14px 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: rgba(255, 252, 244, 0.6);
+  transition: border-color var(--duration) var(--ease), background var(--duration) var(--ease);
+}
+
+.app-header-repo:hover {
+  border-color: var(--vermillion);
+  background: rgba(255, 252, 244, 0.9);
+}
+
+.app-header-repo-seal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: var(--vermillion);
+  color: var(--paper);
+  font-family: var(--serif);
+  font-weight: 900;
+  font-size: 17px;
+  line-height: 1;
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-stamp);
+  transform: rotate(-3deg);
+  flex-shrink: 0;
+  position: relative;
+}
+
+.app-header-repo-seal::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  border: 1px solid rgba(244, 237, 224, 0.4);
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.app-header-repo-text {
+  font-family: var(--serif);
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
 /* ================================================================
    卡片 — 通用
    ================================================================ */
