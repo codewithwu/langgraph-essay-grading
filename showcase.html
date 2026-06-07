@@ -1,0 +1,2271 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>作文评分智能体 · 项目志 A Project Chronicle</title>
+<meta name="description" content="基于 LangGraph 的多维度高考作文评分智能体 · 纯前端 SPA · 墨韵设计" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+/* ============================================================
+   作文评分智能体 · Project Chronicle
+   墨韵 × 现代工程 · Rice Paper × Ink × Vermillion
+   ============================================================ */
+
+:root{
+  --paper:        #f3ead4;          /* 宣纸 */
+  --paper-deep:   #e8dcbb;          /* 旧宣纸 */
+  --paper-grain:  #d9c896;          /* 颗粒色 */
+  --ink:          #1a1410;          /* 浓墨 */
+  --ink-soft:     #3b2f24;          /* 淡墨 */
+  --ink-mist:     #6b5b46;          /* 雾墨 */
+  --ink-pale:     #a39078;          /* 浅墨 */
+  --vermillion:   #b8341f;          /* 朱砂 */
+  --vermillion-d: #8a2615;          /* 老朱砂 */
+  --vermillion-l: #d75a44;          /* 浅朱砂 */
+  --cinnabar-bg:  #f5d6c8;          /* 印泥背 */
+  --gold:         #a07f3a;          /* 描金 */
+  --gold-soft:    #c9a85f;
+  --jade:         #4a6b58;          /* 玉青点缀 */
+  --night:        #14110d;          /* 墨夜 */
+  --night-soft:   #211c15;
+  --cream-on-dark:#e8dcbb;
+
+  --serif:  "Noto Serif SC", "Cormorant Garamond", "Songti SC", "STSong", serif;
+  --sans:   "Noto Sans SC", "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --cal:    "Ma Shan Zheng", "Noto Serif SC", serif;
+  --mono:   "JetBrains Mono", "SF Mono", Menlo, monospace;
+  --latin:  "Cormorant Garamond", "Noto Serif SC", serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:17px;
+  line-height:1.7;
+  color:var(--ink);
+  background:var(--paper);
+  overflow-x:hidden;
+  background-image:
+    radial-gradient(at 20% 30%, rgba(216,196,150,.4) 0%, transparent 50%),
+    radial-gradient(at 80% 70%, rgba(184,52,31,.04) 0%, transparent 50%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.3  0 0 0 0 0.2  0 0 0 0 0.1  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+::selection{background:var(--vermillion);color:var(--paper)}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+
+/* ============ UTILITY ============ */
+.wrap{max-width:1320px;margin:0 auto;padding:0 48px;position:relative}
+.wrap-narrow{max-width:920px;margin:0 auto;padding:0 48px;position:relative}
+.eyebrow{
+  font-family:var(--serif);
+  font-weight:500;
+  font-size:11px;
+  letter-spacing:.42em;
+  text-transform:uppercase;
+  color:var(--ink-mist);
+  display:inline-flex;align-items:center;gap:14px;
+}
+.eyebrow::before{
+  content:"";display:inline-block;width:32px;height:1px;background:currentColor;
+}
+.eyebrow.right::before{display:none}
+.eyebrow.right::after{
+  content:"";display:inline-block;width:32px;height:1px;background:currentColor;
+}
+.eyebrow.red{color:var(--vermillion)}
+.eyebrow.cream{color:var(--cream-on-dark);opacity:.7}
+.seal-tag{
+  display:inline-flex;align-items:center;gap:8px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+  color:var(--vermillion);
+  padding:6px 12px;
+  border:1px solid var(--vermillion);
+  background:var(--cinnabar-bg);
+}
+.seal-tag::before{
+  content:"";width:8px;height:8px;background:var(--vermillion);
+  border-radius:50%;display:inline-block;
+}
+
+/* ============ TOP CHROME ============ */
+.chrome{
+  position:fixed;top:0;left:0;right:0;z-index:50;
+  padding:18px 0;
+  background:rgba(243,234,212,.85);
+  backdrop-filter:blur(14px) saturate(180%);
+  -webkit-backdrop-filter:blur(14px) saturate(180%);
+  border-bottom:1px solid rgba(26,20,16,.08);
+}
+.chrome-inner{
+  max-width:1320px;margin:0 auto;padding:0 48px;
+  display:flex;align-items:center;justify-content:space-between;gap:32px;
+}
+.brand{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--serif);font-weight:600;
+}
+.brand-mark{
+  width:38px;height:38px;background:var(--vermillion);color:var(--paper);
+  display:grid;place-items:center;
+  font-family:var(--cal);font-size:24px;line-height:1;
+  position:relative;
+  box-shadow:0 2px 0 var(--vermillion-d);
+}
+.brand-mark::after{
+  content:"";position:absolute;inset:0;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40'><filter id='n'><feTurbulence baseFrequency='0.7' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode:multiply;opacity:.6;pointer-events:none;
+}
+.brand-text{display:flex;flex-direction:column;gap:2px}
+.brand-text .a{font-size:15px;font-weight:600;color:var(--ink)}
+.brand-text .b{font-size:10px;letter-spacing:.3em;color:var(--ink-mist);text-transform:uppercase}
+.nav{display:flex;gap:28px;align-items:center;font-size:13.5px;letter-spacing:.04em}
+.nav a{color:var(--ink-soft);transition:color .25s}
+.nav a:hover{color:var(--vermillion)}
+.nav .cta{
+  background:var(--ink);color:var(--paper);
+  padding:9px 18px;font-family:var(--sans);font-weight:500;font-size:12.5px;
+  letter-spacing:.16em;text-transform:uppercase;
+  transition:background .25s, transform .25s;
+}
+.nav .cta:hover{background:var(--vermillion);transform:translateY(-1px)}
+.nav .cta.alt{background:var(--vermillion)}
+.nav .cta.alt:hover{background:var(--ink)}
+
+/* ============ HERO ============ */
+.hero{
+  position:relative;
+  min-height:100vh;
+  padding:140px 0 60px;
+  display:flex;align-items:center;
+  overflow:hidden;
+}
+.hero-grid{
+  display:grid;
+  grid-template-columns: 1.15fr .85fr;
+  gap:60px;
+  align-items:end;
+  position:relative;z-index:2;
+}
+.hero-eyebrow{display:flex;align-items:center;gap:24px;margin-bottom:36px}
+.hero-eyebrow .num{
+  font-family:var(--serif);
+  font-size:13px;letter-spacing:.5em;
+  color:var(--vermillion);
+}
+.hero-eyebrow .dash{width:60px;height:1px;background:var(--vermillion)}
+.hero h1{
+  font-family:var(--serif);
+  font-weight:900;
+  font-size:clamp(64px, 9vw, 148px);
+  line-height:.9;
+  letter-spacing:-.03em;
+  color:var(--ink);
+  position:relative;
+}
+.hero h1 .vert{
+  display:inline-block;writing-mode:vertical-rl;
+  font-family:var(--cal);font-weight:400;
+  font-size:.5em;color:var(--vermillion);
+  margin:0 .18em;vertical-align:middle;line-height:1;
+}
+.hero h1 .splash{
+  display:inline-block;color:var(--vermillion);
+  font-family:var(--serif);font-style:italic;font-weight:500;
+  position:relative;
+}
+.hero h1 .inkdrop{
+  position:absolute;right:-.1em;top:.3em;
+  width:.18em;height:.18em;background:var(--ink);
+  border-radius:50%;opacity:.9;
+}
+.hero-sub-zh{
+  margin-top:36px;
+  font-family:var(--serif);
+  font-size:21px;line-height:1.7;font-weight:400;
+  color:var(--ink-soft);
+  max-width:540px;
+}
+.hero-sub-zh strong{color:var(--vermillion-d);font-weight:600}
+.hero-en{
+  margin-top:14px;
+  font-family:var(--latin);
+  font-style:italic;font-weight:400;
+  font-size:18px;
+  color:var(--ink-mist);
+  letter-spacing:.02em;
+}
+.hero-stats{
+  margin-top:48px;
+  display:flex;gap:0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  padding:0;
+}
+.hero-stat{
+  flex:1;padding:18px 22px 18px 0;
+  border-right:1px solid rgba(26,20,16,.18);
+}
+.hero-stat:last-child{border-right:none}
+.hero-stat .k{
+  font-family:var(--sans);font-size:10.5px;letter-spacing:.32em;
+  text-transform:uppercase;color:var(--ink-mist);margin-bottom:8px;
+}
+.hero-stat .v{
+  font-family:var(--serif);font-weight:700;
+  font-size:28px;line-height:1;color:var(--ink);
+}
+.hero-stat .v .u{
+  font-size:14px;font-weight:400;color:var(--ink-mist);margin-left:4px;
+}
+.hero-stat .v .u-sep{
+  font-size:22px;font-weight:300;font-style:italic;color:var(--vermillion);
+  margin:0 2px;font-family:var(--latin);
+}
+.hero-cta{
+  margin-top:36px;
+  display:flex;gap:14px;flex-wrap:wrap;align-items:center;
+}
+.btn{
+  display:inline-flex;align-items:center;gap:14px;
+  padding:18px 30px;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;
+  border:1.5px solid var(--ink);
+  background:transparent;color:var(--ink);
+  transition:all .35s cubic-bezier(.2,.7,.2,1);
+  cursor:pointer;
+}
+.btn .arr{font-family:var(--serif);font-size:18px;line-height:1;transition:transform .35s}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn:hover .arr{transform:translateX(6px)}
+.btn-primary{background:var(--ink);color:var(--paper)}
+.btn-primary:hover{background:var(--vermillion);border-color:var(--vermillion)}
+.btn-vermillion{border-color:var(--vermillion);color:var(--vermillion)}
+.btn-vermillion:hover{background:var(--vermillion);color:var(--paper)}
+
+/* HERO RIGHT — calligraphic seal panel */
+.hero-right{
+  position:relative;height:100%;min-height:560px;
+  display:flex;align-items:flex-end;justify-content:flex-end;
+}
+.calligraphy{
+  position:relative;
+  width:100%;max-width:480px;aspect-ratio:.82/1;
+}
+.cal-char{
+  position:absolute;font-family:var(--cal);
+  color:var(--ink);
+  line-height:1;
+  user-select:none;
+}
+.cal-1{top:-20px;left:60px;font-size:340px;color:var(--ink);transform:rotate(-3deg)}
+.cal-1::after{
+  content:"";position:absolute;inset:-5%;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.6' numOctaves='3'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode:multiply;pointer-events:none;opacity:.5;
+}
+.seal-stack{
+  position:absolute;right:-30px;top:60px;
+  display:flex;flex-direction:column;gap:14px;
+  z-index:3;
+}
+.seal{
+  width:84px;height:84px;
+  background:var(--vermillion);
+  color:var(--paper);
+  display:grid;place-items:center;
+  font-family:var(--cal);
+  position:relative;
+  box-shadow:0 4px 0 var(--vermillion-d), 0 14px 24px rgba(184,52,31,.25);
+  border:2px solid var(--vermillion-d);
+}
+.seal.sm{width:60px;height:60px}
+.seal::before{
+  content:"";position:absolute;inset:6px;
+  border:1px solid rgba(255,255,255,.4);
+}
+.seal::after{
+  content:"";position:absolute;inset:0;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='80' height='80'><filter id='n'><feTurbulence baseFrequency='1.2' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='0.4'/></svg>");
+  mix-blend-mode:screen;pointer-events:none;
+}
+.seal.s1{font-size:54px;transform:rotate(-2deg)}
+.seal.s2{font-size:30px;align-self:flex-end;background:var(--ink);color:var(--paper);box-shadow:0 4px 0 #000, 0 14px 24px rgba(0,0,0,.3);border-color:#000}
+.seal.s3{font-size:22px;font-family:var(--sans);font-weight:700;letter-spacing:.05em;background:var(--paper);color:var(--vermillion);box-shadow:0 4px 0 var(--paper-grain);border-color:var(--vermillion);width:96px;height:96px}
+.hero-corner{
+  position:absolute;bottom:0;right:0;
+  font-family:var(--serif);font-size:13px;letter-spacing:.18em;
+  color:var(--ink-mist);
+  writing-mode:vertical-rl;
+  display:flex;flex-direction:column;gap:6px;
+}
+.hero-corner span{color:var(--vermillion);font-family:var(--cal);font-size:18px}
+
+/* HERO subtle background ink wash */
+.ink-wash{
+  position:absolute;inset:0;pointer-events:none;z-index:1;overflow:hidden;
+}
+.ink-wash::before{
+  content:"";position:absolute;left:-10%;top:50%;
+  width:60%;height:60%;
+  background:radial-gradient(ellipse at center, rgba(26,20,16,.07) 0%, transparent 70%);
+  filter:blur(40px);
+}
+.ink-wash::after{
+  content:"";position:absolute;right:-5%;top:5%;
+  width:50%;height:50%;
+  background:radial-gradient(ellipse at center, rgba(184,52,31,.06) 0%, transparent 70%);
+  filter:blur(40px);
+}
+
+/* ============ SECTION BASE ============ */
+section{
+  position:relative;
+  padding:120px 0;
+}
+section.dark{
+  background:var(--night);
+  color:var(--cream-on-dark);
+}
+section.dark .eyebrow{color:var(--cream-on-dark);opacity:.6}
+section.dark .eyebrow::before{background:currentColor;opacity:.6}
+section.ink-wash-band{
+  background:var(--night);
+  color:var(--cream-on-dark);
+  position:relative;
+  overflow:hidden;
+}
+section.ink-wash-band::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 15% 30%, rgba(184,52,31,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 85% 80%, rgba(201,168,95,.07) 0%, transparent 50%);
+  pointer-events:none;
+}
+.section-head{margin-bottom:80px;position:relative}
+.section-head .zh{
+  font-family:var(--serif);font-weight:700;
+  font-size:clamp(40px,5.5vw,72px);line-height:1.05;letter-spacing:-.02em;
+  margin-top:18px;color:inherit;
+}
+.section-head .zh em{font-style:normal;color:var(--vermillion)}
+section.dark .section-head .zh em{color:var(--vermillion-l)}
+.section-head .lead{
+  font-family:var(--serif);
+  font-size:19px;line-height:1.7;
+  color:var(--ink-soft);
+  max-width:640px;margin-top:24px;
+}
+section.dark .section-head .lead{color:rgba(232,220,187,.7)}
+.section-head .meta{
+  display:flex;align-items:center;gap:24px;
+  margin-top:32px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.2em;
+  color:var(--ink-mist);
+}
+section.dark .section-head .meta{color:rgba(232,220,187,.4)}
+.section-head .meta .dot{width:5px;height:5px;background:var(--vermillion);border-radius:50%}
+
+/* ============ TL;DR / 概要 ============ */
+.summary{
+  background:var(--paper-deep);
+  padding:80px 0;
+  border-top:1px solid var(--ink-pale);
+  border-bottom:1px solid var(--ink-pale);
+}
+.summary-grid{
+  display:grid;grid-template-columns:1fr 1.6fr;gap:80px;align-items:start;
+}
+.summary-aside .num{
+  font-family:var(--serif);font-weight:300;font-style:italic;
+  font-size:120px;line-height:.9;color:var(--vermillion);
+  margin-bottom:16px;
+}
+.summary-aside .label{
+  font-family:var(--mono);font-size:11px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--ink-mist);
+}
+.summary-body p{
+  font-family:var(--serif);
+  font-size:22px;line-height:1.65;
+  color:var(--ink);
+  margin-bottom:24px;
+}
+.summary-body p:first-of-type::first-letter{
+  font-family:var(--cal);
+  font-size:64px;
+  line-height:.8;float:left;margin:6px 12px 0 0;
+  color:var(--vermillion);
+}
+.summary-body p strong{color:var(--vermillion-d);font-weight:600}
+.summary-tags{
+  margin-top:40px;
+  display:flex;flex-wrap:wrap;gap:10px;
+}
+.chip{
+  font-family:var(--sans);font-size:12px;letter-spacing:.08em;
+  padding:7px 14px;
+  border:1px solid var(--ink);
+  color:var(--ink);
+  background:transparent;
+  border-radius:24px;
+}
+.chip.solid{background:var(--ink);color:var(--paper)}
+.chip.red{border-color:var(--vermillion);color:var(--vermillion);background:var(--cinnabar-bg)}
+
+/* ============ HIGHLIGHTS ============ */
+.highlights{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:0;
+  border-top:1px solid var(--ink);
+  border-left:1px solid var(--ink);
+}
+.hl{
+  position:relative;
+  padding:48px 40px 56px;
+  border-right:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  background:var(--paper);
+  transition:background .4s;
+  min-height:340px;
+  display:flex;flex-direction:column;
+}
+.hl:hover{background:var(--paper-deep)}
+.hl .index{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:18px;color:var(--vermillion);
+  display:flex;align-items:center;gap:14px;
+  margin-bottom:24px;
+}
+.hl .index::after{
+  content:"";flex:1;height:1px;background:var(--vermillion);opacity:.4;
+}
+.hl h3{
+  font-family:var(--serif);font-weight:700;
+  font-size:30px;line-height:1.2;color:var(--ink);
+  margin-bottom:8px;
+}
+.hl .h3-en{
+  font-family:var(--latin);font-style:italic;font-weight:400;
+  font-size:14px;color:var(--ink-mist);
+  letter-spacing:.1em;margin-bottom:20px;
+}
+.hl p{
+  font-family:var(--serif);
+  font-size:15.5px;line-height:1.7;color:var(--ink-soft);
+  flex:1;
+}
+.hl .icon{
+  position:absolute;right:32px;bottom:32px;
+  width:64px;height:64px;
+  color:var(--vermillion);opacity:.7;
+}
+
+/* ============ ARCHITECTURE / LANGGRAPH DAG ============ */
+.arch-wrap{
+  background:var(--paper-deep);
+  padding:120px 0;
+  border-top:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+}
+.arch-stage{
+  background:var(--paper);
+  border:1px solid var(--ink);
+  padding:60px 40px 40px;
+  position:relative;
+  margin-top:48px;
+}
+.arch-stage::before{
+  content:"FIG. 01 / 多智能体工作流";
+  position:absolute;top:-10px;left:32px;
+  background:var(--paper-deep);padding:0 14px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;
+  color:var(--vermillion);
+}
+.dag{
+  width:100%;height:auto;display:block;
+  max-height:560px;
+}
+.dag text{font-family:var(--sans);font-weight:500}
+.dag .node-rect{fill:var(--paper);stroke:var(--ink);stroke-width:1.4;transition:fill .3s, transform .3s;cursor:pointer}
+.dag .node-rect.start{fill:var(--ink)}
+.dag .node-rect.end{fill:var(--vermillion)}
+.dag .node-rect.calc{fill:var(--cinnabar-bg);stroke:var(--vermillion)}
+.dag .node-text{fill:var(--ink);font-size:14px;letter-spacing:.04em}
+.dag .node-text.light{fill:var(--paper)}
+.dag .node-sub{fill:var(--ink-mist);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase}
+.dag .node-rect:hover{fill:var(--paper-deep);transform:translateY(-2px)}
+.dag .edge{stroke:var(--ink);stroke-width:1.4;fill:none}
+.dag .edge.cond{stroke:var(--vermillion);stroke-dasharray:4 4}
+.dag .edge.parallel{stroke:var(--ink);stroke-width:1;opacity:.7}
+.dag .edge-label{fill:var(--vermillion);font-size:11px;letter-spacing:.18em;font-family:var(--mono);font-weight:500}
+.dag .edge-label.dark{fill:var(--ink)}
+
+.arch-legend{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  margin-top:32px;border:1px solid var(--ink);
+}
+.legend-item{
+  padding:20px 24px;
+  border-right:1px solid var(--ink);
+  display:flex;align-items:center;gap:14px;
+}
+.legend-item:last-child{border-right:none}
+.legend-swatch{
+  width:24px;height:24px;border:1.4px solid var(--ink);
+  flex-shrink:0;
+}
+.legend-swatch.s-start{background:var(--ink)}
+.legend-swatch.s-end{background:var(--vermillion)}
+.legend-swatch.s-calc{background:var(--cinnabar-bg);border-color:var(--vermillion)}
+.legend-swatch.s-gaokao{
+  background:var(--paper);
+  background-image:
+    linear-gradient(135deg, var(--vermillion) 0%, var(--vermillion) 50%, transparent 50%);
+}
+.legend-text .t{font-family:var(--serif);font-weight:600;font-size:13.5px}
+.legend-text .d{font-family:var(--sans);font-size:11.5px;color:var(--ink-mist);letter-spacing:.04em}
+
+/* ============ DIMENSIONS TABLE ============ */
+.dim-table{
+  border:1px solid var(--ink);
+  background:var(--paper);
+  margin-top:48px;
+}
+.dim-row{
+  display:grid;
+  grid-template-columns: 90px 1.2fr 1.6fr 130px 80px;
+  align-items:center;
+  border-bottom:1px solid var(--ink);
+  transition:background .25s;
+}
+.dim-row:last-child{border-bottom:none}
+.dim-row:hover{background:var(--paper-deep)}
+.dim-row.head{
+  background:var(--ink);color:var(--paper);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;
+  text-transform:uppercase;
+}
+.dim-row.head .dim-cell{padding:18px 24px}
+.dim-cell{padding:24px;display:flex;align-items:center;gap:14px}
+.dim-cell.center{justify-content:center}
+.dim-num{
+  font-family:var(--serif);font-weight:900;font-style:italic;
+  font-size:28px;color:var(--vermillion);
+  width:42px;
+}
+.dim-row.head .dim-num{color:var(--vermillion-l)}
+.dim-name{font-family:var(--serif);font-weight:700;font-size:20px;line-height:1.2}
+.dim-name small{
+  display:block;font-family:var(--sans);font-weight:400;font-size:11px;
+  color:var(--ink-mist);letter-spacing:.2em;margin-top:4px;text-transform:uppercase;
+}
+.dim-row.head .dim-name small{color:rgba(232,220,187,.5)}
+.dim-desc{font-size:14.5px;line-height:1.6;color:var(--ink-soft)}
+.dim-row.head .dim-desc{color:rgba(232,220,187,.7);font-size:11.5px;line-height:1.5}
+.dim-weight{
+  font-family:var(--serif);font-weight:700;
+  font-size:36px;line-height:1;
+}
+.dim-weight .pct{font-size:18px;color:var(--vermillion);margin-left:2px}
+.dim-row.head .dim-weight{font-size:11.5px;letter-spacing:.3em}
+.dim-bar{
+  width:80px;height:6px;background:rgba(26,20,16,.1);
+  position:relative;overflow:hidden;
+}
+.dim-bar i{
+  position:absolute;left:0;top:0;bottom:0;background:var(--vermillion);
+}
+.dim-bar.w30 i{width:30%}
+.dim-bar.w20 i{width:20%}
+.dim-bar.w14 i{width:14.28%}
+
+.dim-mode-label{
+  margin:48px 0 18px;
+  font-family:var(--mono);
+  font-size:11px;letter-spacing:.3em;text-transform:uppercase;
+  color:var(--vermillion);
+  display:flex;align-items:center;gap:14px;
+}
+.dim-mode-label::after{
+  content:"";flex:1;height:1px;
+  background:var(--vermillion);opacity:.35;
+}
+
+/* ============ FEATURE BLOCKS (Conditional short-circuit, parallel, streaming) ============ */
+.feature{
+  display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;
+  padding:100px 0;
+  border-top:1px solid var(--ink);
+}
+.feature.reverse{grid-template-columns:1fr 1fr;direction:rtl}
+.feature.reverse > *{direction:ltr}
+.feature-visual{
+  position:relative;aspect-ratio:1/1;
+  background:var(--paper-deep);
+  border:1px solid var(--ink);
+  display:grid;place-items:center;
+  overflow:hidden;
+}
+.feature-visual::before{
+  content:"";position:absolute;top:14px;left:14px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.3em;
+  color:var(--vermillion);
+}
+.feature.short .feature-visual::before{content:"CONDITIONAL EDGE"}
+.feature.parallel .feature-visual::before{content:"PARALLEL FAN-OUT"}
+.feature.streaming .feature-visual::before{content:"STREAMING UI"}
+.feature.short .feature-visual::before{content:"CONDITIONAL EDGE"}
+
+/* conditional short-circuit visual */
+.short-vis{position:relative;width:80%;height:80%}
+.short-vis .gate{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:34%;height:30%;
+  background:var(--vermillion);color:var(--paper);
+  display:grid;place-items:center;
+  font-family:var(--cal);font-size:42px;
+  border:2px solid var(--vermillion-d);
+  box-shadow:0 4px 0 var(--vermillion-d);
+}
+.short-vis .gate::after{
+  content:"";position:absolute;inset:6px;border:1px solid rgba(255,255,255,.3);
+}
+.short-vis .branch{
+  position:absolute;right:0;top:0;
+  width:60%;height:100%;
+}
+.short-vis .branch .arrow{
+  position:absolute;font-family:var(--mono);font-size:12px;
+  letter-spacing:.18em;
+  color:var(--ink);
+}
+.short-vis .branch .a-yes{top:8%;right:8%;color:var(--ink-mist)}
+.short-vis .branch .a-yes::after{content:"→ 三维并行";color:var(--ink);font-weight:600}
+.short-vis .branch .a-no{bottom:8%;right:8%;color:var(--vermillion)}
+.short-vis .branch .a-no::after{content:"↘ 直达综合分";color:var(--vermillion);font-weight:600}
+.short-vis .branch .line{position:absolute;right:0;width:60%;height:1px;background:var(--ink)}
+.short-vis .branch .line.yes{top:14%}
+.short-vis .branch .line.no{bottom:14%;background:var(--vermillion)}
+.short-vis .branch .badge{
+  position:absolute;right:30%;font-family:var(--mono);font-size:10px;
+  padding:4px 8px;background:var(--cinnabar-bg);color:var(--vermillion);
+  border:1px solid var(--vermillion);
+}
+.short-vis .branch .badge.yes{top:calc(14% - 14px);right:34%;background:transparent;color:var(--ink-mist);border-color:rgba(26,20,16,.3)}
+.short-vis .branch .badge.no{bottom:calc(14% - 14px);right:24%}
+
+/* parallel fan-out visual */
+.par-vis{position:relative;width:90%;height:80%}
+.par-vis .src{
+  position:absolute;left:0;top:50%;transform:translateY(-50%);
+  width:80px;height:80px;
+  background:var(--ink);color:var(--paper);
+  display:grid;place-items:center;
+  font-family:var(--cal);font-size:40px;
+}
+.par-vis .par-row{
+  position:absolute;right:0;top:0;width:60%;height:100%;
+  display:flex;flex-direction:column;justify-content:space-between;align-items:flex-end;
+}
+.par-vis .par-item{
+  width:140px;height:60px;
+  background:var(--paper);border:1.4px solid var(--ink);
+  display:grid;place-items:center;
+  font-family:var(--serif);font-weight:600;font-size:14px;
+  position:relative;
+}
+.par-vis .par-item::before{
+  content:"";position:absolute;left:-60px;top:50%;
+  width:60px;height:1px;background:var(--ink);
+}
+.par-vis .par-item::after{
+  content:"∥";position:absolute;left:-90px;top:50%;transform:translateY(-50%);
+  color:var(--vermillion);font-size:22px;font-weight:700;
+}
+.par-vis .par-item:nth-child(1){border-color:var(--vermillion);background:var(--cinnabar-bg);color:var(--vermillion-d)}
+
+/* streaming visual */
+.stream-vis{
+  position:relative;width:90%;height:90%;
+  display:flex;flex-direction:column;gap:10px;justify-content:center;
+  padding:20px;
+}
+.stream-vis .row{
+  display:grid;grid-template-columns:60px 1fr 50px;align-items:center;gap:10px;
+  font-family:var(--sans);font-size:12px;
+}
+.stream-vis .row .t{font-family:var(--mono);color:var(--ink-mist);font-size:10px;letter-spacing:.1em}
+.stream-vis .row .b{height:6px;background:var(--paper-deep);position:relative;overflow:hidden;border:1px solid var(--ink-pale)}
+.stream-vis .row .b i{position:absolute;left:0;top:0;bottom:0;background:var(--vermillion);width:0;animation:fill 4s linear infinite}
+.stream-vis .row:nth-child(1) .b i{animation-delay:0s}
+.stream-vis .row:nth-child(2) .b i{animation-delay:.6s}
+.stream-vis .row:nth-child(3) .b i{animation-delay:1.2s;width:0;animation:fill2 4s linear infinite}
+.stream-vis .row:nth-child(4) .b i{animation-delay:1.8s}
+.stream-vis .row .v{font-family:var(--serif);font-weight:700;color:var(--vermillion);text-align:right}
+@keyframes fill{0%{width:0}100%{width:100%}}
+@keyframes fill2{0%,5%{width:0}90%,100%{width:100%}}
+
+.feature-text h3{
+  font-family:var(--serif);font-weight:700;
+  font-size:42px;line-height:1.15;letter-spacing:-.01em;
+  color:var(--ink);
+  margin-bottom:14px;
+}
+.feature-text .h3-en{
+  font-family:var(--latin);font-style:italic;
+  font-size:18px;color:var(--ink-mist);
+  margin-bottom:24px;
+}
+section.dark .feature-text .h3-en{color:rgba(232,220,187,.5)}
+.feature-text p{font-size:16px;line-height:1.7;color:var(--ink-soft);margin-bottom:16px}
+section.dark .feature-text p{color:rgba(232,220,187,.75)}
+.feature-list{margin-top:20px;display:flex;flex-direction:column;gap:12px}
+.feature-list li{
+  display:flex;gap:14px;align-items:flex-start;
+  list-style:none;
+  font-size:15px;line-height:1.6;color:var(--ink-soft);
+}
+section.dark .feature-list li{color:rgba(232,220,187,.75)}
+.feature-list li::before{
+  content:"◈";color:var(--vermillion);font-size:13px;margin-top:4px;flex-shrink:0;
+}
+.feature-list li strong{color:var(--ink);font-weight:600}
+section.dark .feature-list li strong{color:var(--cream-on-dark)}
+
+/* ============ DESIGN PHILOSOPHY ============ */
+.philosophy-grid{
+  display:grid;grid-template-columns:1.1fr .9fr;gap:0;
+  border:1px solid var(--ink);background:var(--paper);
+}
+.phil-text{padding:56px 48px;border-right:1px solid var(--ink)}
+.phil-text h3{
+  font-family:var(--serif);font-weight:700;font-size:30px;
+  margin-bottom:14px;line-height:1.25;
+}
+.phil-text .h3-en{font-family:var(--latin);font-style:italic;font-size:15px;color:var(--ink-mist);margin-bottom:20px}
+.phil-text p{font-size:15.5px;line-height:1.7;color:var(--ink-soft);margin-bottom:14px}
+.phil-palette{padding:40px;display:flex;flex-direction:column;gap:14px}
+.palette-row{display:flex;align-items:center;gap:18px}
+.palette-swatch{width:64px;height:64px;border:1px solid var(--ink);flex-shrink:0;position:relative}
+.palette-swatch::after{
+  content:"";position:absolute;inset:0;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='60' height='60'><filter id='n'><feTurbulence baseFrequency='1' numOctaves='2'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0.12 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode:multiply;pointer-events:none;
+}
+.palette-swatch.tone-paper{background:#f3ead4}
+.palette-swatch.tone-paper-deep{background:#e8dcbb}
+.palette-swatch.tone-ink{background:#1a1410}
+.palette-swatch.tone-vermillion{background:#b8341f}
+.palette-swatch.tone-gold{background:#a07f3a}
+.palette-info .name{font-family:var(--serif);font-weight:600;font-size:16px;margin-bottom:2px}
+.palette-info .hex{font-family:var(--mono);font-size:11px;color:var(--ink-mist);letter-spacing:.16em}
+
+/* ============ TECH STACK ============ */
+.tech-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0;
+  border:1px solid var(--ink);
+}
+.tech{
+  padding:36px 28px;
+  border-right:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  background:var(--paper);color:var(--ink);
+  transition:background .3s, color .3s;
+  min-height:200px;
+  display:flex;flex-direction:column;justify-content:space-between;
+  position:relative;
+}
+.tech:hover{background:var(--ink);color:var(--cream-on-dark)}
+.tech:hover .tech-sub{color:rgba(232,220,187,.5)}
+.tech:hover .tech-mark{color:var(--vermillion-l)}
+.tech:nth-child(4n){border-right:none}
+.tech-row-end{border-bottom:none !important}
+.tech .tech-mark{
+  font-family:var(--cal);
+  font-size:48px;line-height:1;
+  color:var(--vermillion);
+  margin-bottom:18px;
+}
+.tech .tech-name{
+  font-family:var(--serif);font-weight:700;
+  font-size:22px;line-height:1.2;
+}
+.tech .tech-sub{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--ink-mist);
+  margin-top:6px;
+}
+.tech .tech-v{
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em;
+  color:inherit;opacity:.55;margin-top:14px;
+}
+.tech:hover .tech-v{color:var(--vermillion-l);opacity:1}
+
+/* ============ LLM PROVIDERS ============ */
+.providers{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:48px;
+}
+.prov{
+  padding:24px 22px;
+  border:1px solid var(--ink-pale);
+  background:var(--paper);
+  display:flex;align-items:center;gap:16px;
+  transition:border-color .3s, background .3s;
+}
+.prov:hover{border-color:var(--vermillion);background:var(--cinnabar-bg)}
+.prov .pdot{
+  width:36px;height:36px;border-radius:50%;
+  display:grid;place-items:center;
+  font-family:var(--cal);font-size:18px;color:var(--paper);
+  background:var(--ink);flex-shrink:0;
+}
+.prov.alt .pdot{background:var(--vermillion)}
+.prov.alt2 .pdot{background:var(--gold)}
+.prov.alt3 .pdot{background:var(--jade)}
+.prov-text .pn{font-family:var(--serif);font-weight:600;font-size:16px}
+.prov-text .pp{font-family:var(--sans);font-size:11.5px;color:var(--ink-mist);letter-spacing:.04em;margin-top:2px}
+
+/* ============ STATS / NUMBERS ============ */
+.stats-band{
+  background:var(--night);
+  color:var(--cream-on-dark);
+  padding:100px 0;
+  position:relative;overflow:hidden;
+}
+.stats-band::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(184,52,31,.18) 0%, transparent 50%);
+  pointer-events:none;
+}
+.stat-row{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:0;
+  border-top:1px solid rgba(232,220,187,.2);
+  border-bottom:1px solid rgba(232,220,187,.2);
+  position:relative;z-index:2;
+}
+.stat{
+  padding:40px 28px;
+  border-right:1px solid rgba(232,220,187,.15);
+  text-align:left;
+}
+.stat:last-child{border-right:none}
+.stat .n{
+  font-family:var(--serif);font-weight:300;
+  font-size:clamp(60px,7vw,108px);
+  line-height:.95;color:var(--cream-on-dark);
+  letter-spacing:-.04em;
+}
+.stat .n .s{color:var(--vermillion-l);font-style:italic;font-weight:500}
+.stat .l{
+  margin-top:12px;
+  font-family:var(--serif);font-weight:500;font-size:15px;
+  color:var(--cream-on-dark);
+}
+.stat .d{
+  font-family:var(--sans);font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:rgba(232,220,187,.5);
+  margin-top:4px;
+}
+
+/* ============ TESTING ============ */
+.tests{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:0;
+  border:1px solid var(--ink);margin-top:48px;
+}
+.test-cat{
+  padding:32px 28px;
+  border-right:1px solid var(--ink);
+  border-bottom:1px solid var(--ink);
+  background:var(--paper);
+  position:relative;
+}
+.test-cat:nth-child(3n){border-right:none}
+.test-cat:nth-last-child(-n+3){border-bottom:none}
+.test-cat .lab{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;
+  text-transform:uppercase;color:var(--vermillion);
+  margin-bottom:12px;
+}
+.test-cat h4{
+  font-family:var(--serif);font-weight:700;font-size:20px;
+  margin-bottom:8px;line-height:1.25;
+}
+.test-cat p{font-size:13.5px;line-height:1.6;color:var(--ink-soft)}
+.test-cat .files{
+  margin-top:14px;padding-top:14px;
+  border-top:1px dashed var(--ink-pale);
+  font-family:var(--mono);font-size:11px;color:var(--ink-mist);
+}
+.test-cat .files span{display:block;padding:2px 0}
+.test-cat .files span::before{content:"› ";color:var(--vermillion)}
+
+/* ============ DEPLOYMENT FLOW ============ */
+.deploy{
+  margin-top:48px;
+  background:var(--ink);
+  color:var(--cream-on-dark);
+  border:1px solid var(--ink);
+  padding:48px;
+  position:relative;
+}
+.deploy::before{
+  content:"PIPELINE / 持续部署";
+  position:absolute;top:-10px;left:32px;
+  background:var(--ink);padding:0 14px;
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;
+  color:var(--vermillion-l);
+}
+.deploy-flow{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  align-items:center;
+  gap:0;
+}
+.dstep{
+  padding:24px 18px;
+  border:1px solid rgba(232,220,187,.25);
+  position:relative;
+  text-align:center;
+}
+.dstep:not(:last-child)::after{
+  content:"→";position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  color:var(--vermillion-l);font-size:18px;z-index:2;
+}
+.dstep .ds-num{
+  font-family:var(--serif);font-style:italic;font-weight:300;
+  font-size:24px;color:var(--vermillion-l);
+}
+.dstep .ds-t{
+  font-family:var(--serif);font-weight:600;font-size:15px;
+  color:var(--cream-on-dark);margin-top:6px;
+}
+.dstep .ds-d{
+  font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(232,220,187,.4);
+  margin-top:6px;
+}
+
+/* ============ CTA / FOOTER ============ */
+.cta{
+  background:var(--vermillion);
+  color:var(--paper);
+  padding:140px 0;
+  position:relative;overflow:hidden;
+}
+.cta::before{
+  content:"";position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgba(255,255,255,.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(0,0,0,.15) 0%, transparent 50%);
+  pointer-events:none;
+}
+.cta::after{
+  content:"";position:absolute;inset:0;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.18 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  mix-blend-mode:overlay;opacity:.5;pointer-events:none;
+}
+.cta-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:end;
+  position:relative;z-index:2;
+}
+.cta h2{
+  font-family:var(--serif);font-weight:900;
+  font-size:clamp(54px,7vw,108px);line-height:.95;letter-spacing:-.02em;
+  color:var(--paper);
+}
+.cta h2 em{font-family:var(--cal);font-style:normal;font-weight:400;color:rgba(255,255,255,.7)}
+.cta-sub{
+  font-family:var(--serif);font-size:19px;line-height:1.6;
+  color:rgba(243,234,212,.85);
+  margin-top:20px;max-width:480px;
+}
+.cta-actions{
+  display:flex;flex-direction:column;gap:14px;align-items:flex-end;
+}
+.cta-btn{
+  display:inline-flex;align-items:center;gap:14px;
+  padding:22px 32px;
+  font-family:var(--sans);font-size:13.5px;font-weight:500;
+  letter-spacing:.18em;text-transform:uppercase;
+  background:var(--paper);color:var(--ink);
+  border:1.5px solid var(--paper);
+  transition:all .3s;
+  min-width:280px;justify-content:space-between;
+}
+.cta-btn.alt{background:transparent;color:var(--paper);border-color:var(--paper)}
+.cta-btn:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.cta-btn.alt:hover{background:var(--paper);color:var(--vermillion)}
+.cta-btn .arr{font-family:var(--serif);font-size:18px}
+
+/* ============ FOOTER ============ */
+footer{
+  background:var(--night);
+  color:rgba(232,220,187,.6);
+  padding:60px 0 40px;
+  font-size:13.5px;
+}
+.foot-grid{
+  display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:60px;
+  padding-bottom:48px;border-bottom:1px solid rgba(232,220,187,.15);
+}
+.foot-brand .b{font-family:var(--serif);font-weight:600;font-size:18px;color:var(--cream-on-dark);margin-bottom:6px}
+.foot-brand .s{font-family:var(--mono);font-size:10.5px;letter-spacing:.25em;text-transform:uppercase}
+.foot-brand p{font-size:13px;line-height:1.7;margin-top:18px;color:rgba(232,220,187,.55);max-width:340px}
+.foot-col h5{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.3em;
+  text-transform:uppercase;color:var(--vermillion-l);
+  margin-bottom:18px;
+}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:10px}
+.foot-col a{color:rgba(232,220,187,.7);font-size:13.5px;transition:color .25s}
+.foot-col a:hover{color:var(--cream-on-dark)}
+.foot-bottom{
+  padding-top:32px;
+  display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:11px;letter-spacing:.18em;
+  color:rgba(232,220,187,.4);text-transform:uppercase;
+}
+
+/* ============ REVEAL ON SCROLL ============ */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .9s ease, transform .9s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:translateY(0)}
+.reveal.d1{transition-delay:.1s}
+.reveal.d2{transition-delay:.2s}
+.reveal.d3{transition-delay:.3s}
+.reveal.d4{transition-delay:.4s}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:1100px){
+  .wrap,.wrap-narrow{padding:0 32px}
+  .hero-grid{grid-template-columns:1fr;gap:40px}
+  .hero-right{min-height:380px;justify-content:flex-start}
+  .calligraphy{max-width:340px;margin:0 auto}
+  .cal-1{font-size:260px;left:20px}
+  .summary-grid{grid-template-columns:1fr;gap:40px}
+  .highlights{grid-template-columns:1fr}
+  .tech-grid{grid-template-columns:repeat(2,1fr)}
+  .tech:nth-child(2n){border-right:none}
+  .feature{grid-template-columns:1fr;gap:40px;padding:60px 0}
+  .feature.reverse{direction:ltr}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2n){border-right:none}
+  .stat{border-bottom:1px solid rgba(232,220,187,.15)}
+  .tests{grid-template-columns:1fr}
+  .test-cat{border-right:none !important}
+  .test-cat:nth-last-child(-n+3){border-bottom:1px solid var(--ink)}
+  .test-cat:last-child{border-bottom:none}
+  .providers{grid-template-columns:repeat(2,1fr)}
+  .deploy-flow{grid-template-columns:1fr;gap:8px}
+  .dstep:not(:last-child)::after{content:"↓";position:static;display:block;margin:6px 0}
+  .cta-grid{grid-template-columns:1fr;gap:40px}
+  .cta-actions{align-items:flex-start}
+  .foot-grid{grid-template-columns:1fr 1fr;gap:32px}
+  .arch-legend{grid-template-columns:1fr}
+  .legend-item{border-right:none;border-bottom:1px solid var(--ink)}
+  .legend-item:last-child{border-bottom:none}
+  .dim-row{grid-template-columns:60px 1fr 80px;font-size:14px}
+  .dim-row .dim-desc,.dim-row .dim-cell.bar{display:none}
+}
+@media (max-width:680px){
+  .chrome-inner{padding:0 20px;gap:12px}
+  .nav{display:none}
+  .wrap,.wrap-narrow{padding:0 20px}
+  section{padding:80px 0}
+  .hero{padding:120px 0 40px;min-height:auto}
+  .hero-stats{flex-wrap:wrap}
+  .hero-stat{flex:1 1 50%;padding:14px 14px 14px 0}
+  .dim-row{grid-template-columns:1fr;gap:8px;padding:20px 16px}
+  .dim-cell{padding:0}
+  .tech-grid{grid-template-columns:1fr}
+  .tech{border-right:none !important}
+  .philosophy-grid{grid-template-columns:1fr}
+  .phil-text{border-right:none;border-bottom:1px solid var(--ink)}
+  .cta-btn{min-width:auto;width:100%}
+}
+</style>
+</head>
+<body>
+
+<!-- ============== TOP CHROME ============== -->
+<div class="chrome">
+  <div class="chrome-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">墨</span>
+      <span class="brand-text">
+        <span class="a">作文评分智能体</span>
+        <span class="b">Essay Grading Agent · v0.2</span>
+      </span>
+    </a>
+    <nav class="nav">
+      <a href="#essence">摘要</a>
+      <a href="#highlights">亮点</a>
+      <a href="#architecture">架构</a>
+      <a href="#dimensions">维度</a>
+      <a href="#stack">技术栈</a>
+      <a href="https://codewithwu.github.io/langgraph-essay-grading/" target="_blank" rel="noreferrer" class="cta alt">在线演示 ↗</a>
+      <a href="https://github.com/codewithwu/langgraph-essay-grading" target="_blank" rel="noreferrer" class="cta">GitHub</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ============== HERO ============== -->
+<section class="hero" id="top">
+  <div class="ink-wash"></div>
+  <div class="wrap hero-grid">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <span class="num">壹</span>
+        <span class="dash"></span>
+        <span class="eyebrow">A LANGGRAPH CHRONICLE · 项目志</span>
+      </div>
+
+      <h1>
+        作文<br/>
+        评分<span class="splash">智能体<svg class="inkdrop" viewBox="0 0 10 10"><circle cx="5" cy="5" r="4.5" fill="currentColor"/></svg></span>
+      </h1>
+
+      <p class="hero-sub-zh">
+        基于 <strong>LangGraph</strong> 的多维度评分系统。<strong>两种评分模式</strong>：标准模式
+        4 维（审题立意 · 论据分析 · 结构评估 · 语言文采），高考模式 7 维——完整对齐
+        w.md 中的「基础等级 + 发展等级 + 扣分细则」。<strong>条件短路</strong>精准识别跑题卷，
+        纯前端 SPA 部署于 GitHub Pages，以墨韵为骨，以工程为魂。
+      </p>
+
+      <p class="hero-en">
+        A multi-agent essay grading system built on the LangGraph state-machine — two scoring modes (standard 4-dim / gaokao 7-dim), pure front-end, deployed to the open web, designed in the spirit of rice paper and vermillion seals.
+      </p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="k">评分维度</div>
+          <div class="v">4<span class="u-sep">/</span>7<u>维</u></div>
+        </div>
+        <div class="hero-stat">
+          <div class="k">评分模式</div>
+          <div class="v">2<u>种</u></div>
+        </div>
+        <div class="hero-stat">
+          <div class="k">并行评估</div>
+          <div class="v">3<span class="u-sep">/</span>6<u>路</u></div>
+        </div>
+        <div class="hero-stat">
+          <div class="k">支持模型</div>
+          <div class="v">6+<u>家</u></div>
+        </div>
+      </div>
+
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="https://codewithwu.github.io/langgraph-essay-grading/" target="_blank" rel="noreferrer">
+          立即体验 <span class="arr">→</span>
+        </a>
+        <a class="btn btn-vermillion" href="https://github.com/codewithwu/langgraph-essay-grading" target="_blank" rel="noreferrer">
+          访问仓库 <span class="arr">↗</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="hero-right">
+      <div class="calligraphy">
+        <div class="cal-char cal-1">墨</div>
+        <div class="seal-stack">
+          <div class="seal s1">評</div>
+          <div class="seal s2">墨</div>
+          <div class="seal s3">SCORE<br/>AGENT</div>
+        </div>
+        <div class="hero-corner">
+          <span>墨</span> · 韵 · 智 · 评
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SUMMARY ============== -->
+<section class="summary" id="essence">
+  <div class="wrap summary-grid">
+    <aside class="summary-aside">
+      <div class="num">02</div>
+      <div class="label">ESSENCE / 项目摘要</div>
+    </aside>
+    <div class="summary-body">
+      <p>
+        <strong>这是一个把"多智能体工作流"塞进浏览器的小型工程。</strong>
+        用户粘一篇高考作文、敲一下回车，前端 SPA 便会驱动一组由 <strong>LangGraph</strong> 编排的智能体——
+        先由审题节点判定"是否切题"，再决定要不要并行启动三路（标准）或六路（高考）评估节点；
+        评分通过 OpenAI 兼容协议以 HTTPS 直连大模型，<strong>没有后端、没有代理，Key 只活在 localStorage</strong>。
+      </p>
+      <p>
+        顶部首页可一键切换 <strong>标准模式 / 高考模式</strong>：前者用 4 维通用打分，后者展开为
+        7 维并对齐 w.md 评分标准（基础等级 + 发展等级 + 扣分细则）。整个项目用
+        <strong>TypeScript + React 18 + Vite</strong> 写成，由 GitHub Actions 自动构建并发布到
+        <strong>GitHub Pages</strong>。UI 取"墨韵"之意——宣纸为底、墨黑为文、朱砂为印；评分卡用盖印式印章
+        收束，每个维度依次流式上屏。
+      </p>
+      <p>
+        适合作为<strong>多智能体编排、前端 AI 应用、纯静态部署</strong>三个方向的参考实现——
+        它足够小，可以一晚上读完；也足够完整，覆盖了状态机设计、流式渲染、跨域 LLM 调用、CI/CD 等真实工程问题。
+      </p>
+
+      <div class="summary-tags">
+        <span class="chip solid">LangGraph</span>
+        <span class="chip">Multi-Agent</span>
+        <span class="chip">React 18</span>
+        <span class="chip">TypeScript</span>
+        <span class="chip red">标准 / 高考</span>
+        <span class="chip red">纯前端 SPA</span>
+        <span class="chip">OpenAI Compatible</span>
+        <span class="chip">GitHub Pages</span>
+        <span class="chip">Vitest</span>
+        <span class="chip red">墨韵设计</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== HIGHLIGHTS ============== -->
+<section id="highlights">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">03 / 核心亮点</span>
+      <h2 class="zh">六个<em>让人会心一笑</em>的工程巧思</h2>
+      <p class="lead">
+        项目体量很轻，但每一个"看起来理所当然"的功能背后，都藏着一个具体的设计取舍。
+        下面六点，是它最值得展开讲讲的地方。
+      </p>
+      <div class="meta">
+        <span>HIGHLIGHTS</span><span class="dot"></span>
+        <span>SIX FEATURES</span><span class="dot"></span>
+        <span>2026</span>
+      </div>
+    </div>
+
+    <div class="highlights">
+      <div class="hl reveal d1">
+        <div class="index">01 / Conditional Short-Circuit</div>
+        <h3>条件短路机制</h3>
+        <div class="h3-en">Off-topic essays are not over-graded.</div>
+        <p>
+          审题立意 ≤ 0.5 的作文会被直接送往综合分节点，跳过论据 / 结构 / 语言三路评估。
+          跑题卷不会被"凑维度分"——这是把<strong>阅卷伦理</strong>写进状态机的体现。
+          <strong>标准 / 高考两套图复用同一条条件边</strong>。
+        </p>
+      </div>
+
+      <div class="hl reveal d2">
+        <div class="index">02 / Parallel Fan-Out</div>
+        <h3>多路并行评估</h3>
+        <div class="h3-en">Standard: 3-way · Gaokao: 6-way.</div>
+        <p>
+          审题通过后，<code class="seal-tag">fan_out</code> 节点把状态同时分发给多路评估节点。
+          标准模式三路并行、高考模式六路并行（内容/结构/语言/深度/创新/卷面），
+          耗时由"加和"压缩为"取最大"。
+        </p>
+      </div>
+
+      <div class="hl reveal d3">
+        <div class="index">03 / Streaming UI</div>
+        <h3>流式评分体验</h3>
+        <div class="h3-en">Cards reveal as soon as a node finishes.</div>
+        <p>
+          LangGraph 事件流通过 <code class="seal-tag">useGradingStream</code> 逐事件下发，
+          前端用 <code class="seal-tag">useEffect</code> 增量上屏——用户先看到"审题 0.82"，
+          再依次看到论据、结构、综合分，<strong>不需等待全部完成</strong>。
+        </p>
+      </div>
+
+      <div class="hl reveal d4">
+        <div class="index">04 / Pure Front-End / No Backend</div>
+        <h3>纯前端 · 零后端</h3>
+        <div class="h3-en">API Key never leaves the browser.</div>
+        <p>
+          默认配置外置到 <code class="seal-tag">llm-defaults.json</code>，
+          用户覆盖值存于 <code class="seal-tag">localStorage</code>，构建产物只有
+          <code class="seal-tag">dist/</code>，可以直接 <code class="seal-tag">actions/deploy-pages</code>。
+        </p>
+      </div>
+
+      <div class="hl reveal d1">
+        <div class="index">05 / Gaokao 7-Dim Mode</div>
+        <h3>高考模式 · 七维度</h3>
+        <div class="h3-en">Aligned with the official 高考 grading rubric.</div>
+        <p>
+          切换到高考模式后，工作流展开为 <strong>7 个并行维度</strong>：
+          审题立意 / 内容论据 / 篇章结构 / 语言文采 / 思想深度 / 创新创意 / 卷面格式——
+          对齐 w.md 中的「基础等级 + 发展等级 + 扣分细则」，并以 1/7 等权加权。
+        </p>
+      </div>
+
+      <div class="hl reveal d2">
+        <div class="index">06 / Header · Seal & Repo</div>
+        <h3>顶部 Header · 朱砂印章 + 仓库直达</h3>
+        <div class="h3-en">A seal and a one-click route to the repo.</div>
+        <p>
+          顶部 Header 在 QR 码旁新加「<strong>仓</strong>」字朱砂印章 + 「仓库地址」链接——
+          URL 隐藏在 <code class="seal-tag">href</code>，点击直达 GitHub。
+          与 H1 旁的「墨」字印章呼应，整套设计语言在工程中复用。
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== ARCHITECTURE / DAG ============== -->
+<section class="arch-wrap" id="architecture">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">04 / 架构</span>
+      <h2 class="zh">一张图读懂 <em>LangGraph</em> 工作流</h2>
+      <p class="lead">
+        整个评分流程被建模为有向无环图。审题节点是唯一的"守门人"——
+        它的返回值决定整张图是"展开成并行结构"，还是"折叠成直达终点"。
+        <strong>标准模式与高考模式</strong>编译为两张不同的 StateGraph，但共用同一条条件短路边与同一套节点命名空间。
+      </p>
+      <div class="meta">
+        <span>STATE MACHINE</span><span class="dot"></span>
+        <span>STANDARD 3-WAY · GAOKAO 6-WAY</span><span class="dot"></span>
+        <span>CONDITIONAL EDGE</span>
+      </div>
+    </div>
+
+    <div class="arch-stage reveal">
+      <svg class="dag" viewBox="0 0 1080 520" preserveAspectRatio="xMidYMid meet" aria-label="LangGraph workflow DAG">
+        <defs>
+          <marker id="arr-dark" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a1410"/>
+          </marker>
+          <marker id="arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+            <path d="M0,0 L10,5 L0,10 z" fill="#b8341f"/>
+          </marker>
+        </defs>
+
+        <!-- START node -->
+        <g class="node">
+          <rect class="node-rect start" x="20" y="220" width="120" height="80" rx="3"/>
+          <text class="node-text light" x="80" y="256" text-anchor="middle">START</text>
+          <text class="node-sub" x="80" y="276" text-anchor="middle" fill="#a39078">submit()</text>
+        </g>
+
+        <!-- edge START -> RELEVANCE -->
+        <path class="edge" d="M140,260 L220,260" marker-end="url(#arr-dark)"/>
+
+        <!-- RELEVANCE node -->
+        <g class="node">
+          <rect class="node-rect" x="220" y="220" width="180" height="80" rx="3"/>
+          <text class="node-text" x="310" y="252" text-anchor="middle">审题立意</text>
+          <text class="node-sub" x="310" y="272" text-anchor="middle">check_relevance · 30%</text>
+        </g>
+
+        <!-- conditional branches -->
+        <path class="edge cond" d="M400,240 C460,240 460,90 560,90" marker-end="url(#arr-red)"/>
+        <path class="edge cond" d="M400,280 C460,280 460,430 560,430" marker-end="url(#arr-red)"/>
+
+        <!-- edge labels -->
+        <text class="edge-label" x="448" y="158">score &gt; 0.5</text>
+        <text class="edge-label" x="448" y="368">score ≤ 0.5</text>
+
+        <!-- FAN_OUT node -->
+        <g class="node">
+          <rect class="node-rect" x="560" y="50" width="180" height="80" rx="3"/>
+          <text class="node-text" x="650" y="82" text-anchor="middle">扇出 · Fan-Out</text>
+          <text class="node-sub" x="650" y="102" text-anchor="middle">fan_out · parallel dispatch</text>
+        </g>
+
+        <!-- EVIDENCE -->
+        <g class="node">
+          <rect class="node-rect" x="820" y="0" width="200" height="80" rx="3"/>
+          <text class="node-text" x="920" y="32" text-anchor="middle">论据分析</text>
+          <text class="node-sub" x="920" y="52" text-anchor="middle">check_evidence · 20%</text>
+        </g>
+
+        <!-- STRUCTURE -->
+        <g class="node">
+          <rect class="node-rect" x="820" y="100" width="200" height="80" rx="3"/>
+          <text class="node-text" x="920" y="132" text-anchor="middle">结构评估</text>
+          <text class="node-sub" x="920" y="152" text-anchor="middle">check_structure · 20%</text>
+        </g>
+
+        <!-- EXPRESSION -->
+        <g class="node">
+          <rect class="node-rect" x="820" y="200" width="200" height="80" rx="3"/>
+          <text class="node-text" x="920" y="232" text-anchor="middle">语言文采</text>
+          <text class="node-sub" x="920" y="252" text-anchor="middle">check_expression · 30%</text>
+        </g>
+
+        <!-- fanout to three -->
+        <path class="edge parallel" d="M740,80 C780,80 780,40 820,40" marker-end="url(#arr-dark)"/>
+        <path class="edge parallel" d="M740,90 C780,90 780,140 820,140" marker-end="url(#arr-dark)"/>
+        <path class="edge parallel" d="M740,100 C780,100 780,240 820,240" marker-end="url(#arr-dark)"/>
+
+        <!-- CALCULATE node -->
+        <g class="node">
+          <rect class="node-rect calc" x="560" y="390" width="180" height="80" rx="3"/>
+          <text class="node-text" x="650" y="422" text-anchor="middle" style="fill:#8a2615">综合评分</text>
+          <text class="node-sub" x="650" y="442" text-anchor="middle" style="fill:#b8341f">calculate_final_score</text>
+        </g>
+
+        <!-- 3 dim -> calculate -->
+        <path class="edge" d="M820,40 C780,40 780,420 740,420" marker-end="url(#arr-dark)"/>
+        <path class="edge" d="M820,140 C780,140 780,430 740,430" marker-end="url(#arr-dark)"/>
+        <path class="edge" d="M820,240 C780,240 780,440 740,440" marker-end="url(#arr-dark)"/>
+
+        <!-- short-circuit label on the lower cond path -->
+        <text class="edge-label" x="468" y="468" style="fill:#8a2615">SHORT-CIRCUIT</text>
+
+        <!-- END -->
+        <g class="node">
+          <rect class="node-rect end" x="940" y="390" width="120" height="80" rx="3"/>
+          <text class="node-text light" x="1000" y="426" text-anchor="middle">END</text>
+          <text class="node-sub" x="1000" y="446" text-anchor="middle" fill="#f3ead4">render stamp</text>
+        </g>
+
+        <!-- calculate -> end -->
+        <path class="edge" d="M740,430 L940,430" marker-end="url(#arr-dark)"/>
+      </svg>
+    </div>
+
+    <div class="arch-legend reveal">
+      <div class="legend-item">
+        <span class="legend-swatch s-start"></span>
+        <div class="legend-text">
+          <div class="t">START / 入口</div>
+          <div class="d">用户提交触发</div>
+        </div>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch"></span>
+        <div class="legend-text">
+          <div class="t">评估节点</div>
+          <div class="d">LLM + Zod 结构化输出</div>
+        </div>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch s-calc"></span>
+        <div class="legend-text">
+          <div class="t">综合分 / 终态</div>
+          <div class="d">加权求和 · 朱砂印章呈现</div>
+        </div>
+      </div>
+      <div class="legend-item">
+        <span class="legend-swatch s-gaokao"></span>
+        <div class="legend-text">
+          <div class="t">高考专属节点</div>
+          <div class="d">内容/深度/创新/卷面 — 仅 gaokao</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DIMENSIONS ============== -->
+<section id="dimensions" style="background:var(--paper);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">05 / 评分维度</span>
+      <h2 class="zh">两套尺子，<em>对应两种评分模式</em></h2>
+      <p class="lead">
+        评分维度直接对标高考语文「基础等级 + 发展等级 + 扣分细则」——
+        <strong>标准模式 4 维</strong>用于通用评分，<strong>高考模式 7 维</strong>对齐 w.md 评分标准。
+        所有分值落在 0~1 连续区间，通过权重合成最终综合分。
+      </p>
+      <div class="meta">
+        <span>STANDARD · 4 DIMS</span><span class="dot"></span>
+        <span>GAOKAO · 7 DIMS</span><span class="dot"></span>
+        <span>WEIGHTED SUM</span><span class="dot"></span>
+        <span>ZOD SCHEMA</span>
+      </div>
+    </div>
+
+    <!-- ============ STANDARD MODE ============ -->
+    <div class="dim-mode-label">STANDARD MODE · 标准模式</div>
+    <div class="dim-table reveal">
+      <div class="dim-row head">
+        <div class="dim-cell center"><span class="dim-num">№</span></div>
+        <div class="dim-cell">维度 · DIMENSION</div>
+        <div class="dim-cell">考察重点 · FOCUS</div>
+        <div class="dim-cell center">权重</div>
+        <div class="dim-cell center bar">占比</div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">01</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">审题立意<small>RELEVANCE</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            是否紧扣题目材料、中心是否明确、立意是否深刻、是否有独到见解。重点关注切题 / 扣题 / 立意高度。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">30<span class="pct">%</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w30"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">02</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">论据分析<small>EVIDENCE</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            材料是否充实、论据是否典型、论证方法（举例 / 对比 / 比喻 / 类比）是否有效、事例与观点是否一致。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">20<span class="pct">%</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w20"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">03</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">结构评估<small>STRUCTURE</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            段落安排、层次推进、过渡衔接、首尾呼应、行文逻辑是否连贯。结构完整、条理清晰、过渡自然为佳。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">20<span class="pct">%</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w20"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">04</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">语言文采<small>EXPRESSION</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            用词是否贴切、句式是否灵活、修辞是否恰当、是否有文采与意蕴。允许个性化表达，关注整体语言质量。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">30<span class="pct">%</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w30"><i></i></div></div>
+      </div>
+    </div>
+
+    <!-- ============ GAOKAO MODE ============ -->
+    <div class="dim-mode-label">GAOKAO MODE · 高考模式</div>
+    <div class="dim-table reveal">
+      <div class="dim-row head">
+        <div class="dim-cell center"><span class="dim-num">№</span></div>
+        <div class="dim-cell">维度 · DIMENSION</div>
+        <div class="dim-cell">考察重点 · FOCUS</div>
+        <div class="dim-cell center">权重</div>
+        <div class="dim-cell center bar">占比</div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">01</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">审题立意<small>RELEVANCE</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            题意 / 中心 / 思想 / 感情。是否切题、中心是否突出、是否符合题意所涉及的范围/情境/任务要求；立意是否准确、集中、鲜明，有无独到见解。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">02</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">内容论据<small>CONTENT</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            内容是否充实、论据是否典型 / 充足、事例与观点是否一致；议论文看论证方法（举例 / 对比 / 比喻 / 类比）是否有效；记叙文或散文看细节、情感是否支撑主旨。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">03</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">篇章结构<small>STRUCTURE</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            段落安排、层次推进、过渡衔接、首尾呼应、行文逻辑是否连贯；是否结构严谨、条理清晰、过渡自然。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">04</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">语言文采<small>EXPRESSION</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            用词是否贴切、句式是否灵活、修辞是否得当、文句有无表现力；关注整体语言质量与文采，允许适度个性化表达。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">05</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">思想深度<small>DEPTH</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            ①是否透过现象看本质 ②是否揭示事物内在的因果关系 ③观点是否具有启发作用。对应 w.md 发展等级「深刻」项，三点居其一即可得高分。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">06</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">创新创意<small>NOVELTY</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            ①见解是否新颖 ②材料是否新鲜 ③构思是否精巧 ④推理想象有无独到之处 ⑤是否有个性特征。对应 w.md 发展等级「有创意」项。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+      <div class="dim-row">
+        <div class="dim-cell center"><span class="dim-num">07</span></div>
+        <div class="dim-cell">
+          <div class="dim-name">卷面格式<small>FORMATTING</small></div>
+        </div>
+        <div class="dim-cell">
+          <div class="dim-desc">
+            错别字（1 字扣 1 分，封顶 5 分）/ 标点错误（3 处以上酌情）/ 字数（每少 50 字扣 1 分）/ 是否有标题（无标题扣 2 分）。对应 w.md 扣分细则。
+          </div>
+        </div>
+        <div class="dim-cell center"><span class="dim-weight">1<span class="pct">/7</span></span></div>
+        <div class="dim-cell center bar"><div class="dim-bar w14"><i></i></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FEATURES DETAIL ============== -->
+<section style="background:var(--paper);" id="features">
+  <div class="wrap-narrow">
+    <div class="section-head reveal">
+      <span class="eyebrow red">06 / 三大工程亮点</span>
+      <h2 class="zh">把"小项目"做出"系统感"</h2>
+      <p class="lead">
+        任何一个维度展开，都够写一篇小博客。下面这三个，是我觉得最值得展开的。
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Feature 1: conditional -->
+    <div class="feature short">
+      <div class="feature-visual">
+        <div class="short-vis">
+          <div class="gate">审</div>
+          <div class="branch">
+            <div class="line yes"></div>
+            <div class="line no"></div>
+            <div class="badge yes">relevance &gt; 0.5</div>
+            <div class="badge no">relevance ≤ 0.5</div>
+            <div class="arrow a-yes"></div>
+            <div class="arrow a-no"></div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-text">
+        <h3>条件短路 — <br/>让跑题卷"该低就低"</h3>
+        <div class="h3-en">Ethics encoded in the state machine.</div>
+        <p>
+          在 <code class="seal-tag">routes.ts</code> 里只有 6 行代码：判断 <code class="seal-tag">relevance.score</code> 是否大于阈值
+          <code class="seal-tag">RELEVANCE_THRESHOLD = 0.5</code>，决定走 fan-out 还是直达 final。
+        </p>
+        <p>
+          这条<strong>条件边</strong>的存在，让工作流具备一个非常拟人化的能力——
+          它"知道"自己不该对一份严重跑题的卷子在论据和语言上继续扣分。
+          这不是性能优化，是<strong>评分伦理</strong>的工程化。
+        </p>
+        <ul class="feature-list">
+          <li><strong>阈值集中管理</strong>：调整 <code class="seal-tag">RELEVANCE_THRESHOLD</code> 即可改变闸口松紧，<code class="seal-tag">routes.test.ts</code> 全覆盖。</li>
+          <li><strong>权重独立</strong>：四个维度的权重也集中在 <code class="seal-tag">config.ts</code>，调参不需要改任何业务代码。</li>
+          <li><strong>状态兼容</strong>：短路时 <code class="seal-tag">evidence/structure/expression</code> 留空，<code class="seal-tag">calculate_final_score</code> 用 <code class="seal-tag">?? 0</code> 安全降级。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 2: parallel -->
+    <div class="feature parallel reverse">
+      <div class="feature-visual">
+        <div class="par-vis">
+          <div class="src">扇<br/>出</div>
+          <div class="par-row">
+            <div class="par-item">论据分析</div>
+            <div class="par-item">结构评估</div>
+            <div class="par-item">语言文采</div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-text">
+        <h3>三路并行 — <br/>让等待时间取最大值</h3>
+        <div class="h3-en">From O(sum) to O(max) in latency.</div>
+        <p>
+          <code class="seal-tag">fan_out</code> 是一个空操作节点，但它的三条出边是同时激活的：
+          <code class="seal-tag">check_evidence</code> / <code class="seal-tag">check_structure</code> / <code class="seal-tag">check_expression</code>。
+        </p>
+        <p>
+          LangGraph 会在所有入边都就绪后才触发 <code class="seal-tag">calculate_final_score</code>，
+          三路 LLM 调用因此从"串行加和"压缩为"取最大值"。在前端表现上，
+          <code class="seal-tag">useGradingStream</code> 可以监听到事件交错到达——而不是苦等最慢那一路。
+        </p>
+        <ul class="feature-list">
+          <li><strong>事件流</strong>：每个节点完成都广播一次事件，<code class="seal-tag">useGradingStream</code> 累积到 React 状态。</li>
+          <li><strong>Zod 强类型</strong>：<code class="seal-tag">ScoreDetail = z.object({ score, reason })</code>，编译期就能拿到结构。</li>
+          <li><strong>提示词分离</strong>：每个维度的指令集中在 <code class="seal-tag">DIM_INSTRUCTIONS</code>，调提示词不用碰业务代码。</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Feature 3: streaming -->
+    <div class="feature streaming">
+      <div class="feature-visual">
+        <div class="stream-vis">
+          <div class="row">
+            <div class="t">00:00.0</div>
+            <div class="b"><i></i></div>
+            <div class="v">—</div>
+          </div>
+          <div class="row">
+            <div class="t">00:00.4</div>
+            <div class="b"><i></i></div>
+            <div class="v">.82</div>
+          </div>
+          <div class="row">
+            <div class="t">00:01.2</div>
+            <div class="b"><i></i></div>
+            <div class="v">.74</div>
+          </div>
+          <div class="row">
+            <div class="t">00:01.6</div>
+            <div class="b"><i></i></div>
+            <div class="v">.78</div>
+          </div>
+          <div class="row">
+            <div class="t">00:01.8</div>
+            <div class="b"><i></i></div>
+            <div class="v">.81</div>
+          </div>
+          <div class="row">
+            <div class="t">00:01.9</div>
+            <div class="b"><i></i></div>
+            <div class="v">✦</div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-text">
+        <h3>流式上屏 — <br/>让用户在等待中"看见进度"</h3>
+        <div class="h3-en">Cards reveal, then seal, then stamp.</div>
+        <p>
+          评分过程中，前端会先把"审题立意"卡片显示出来（带骨架过渡），
+          三路并行结果按到达顺序依次展开，最后由盖印动画呈上"综合分"印章。
+        </p>
+        <p>
+          体验上像是"老师在批卷时把分数先念出来，最后才盖章"——
+          比起"黑屏等待 5 秒再整体出现"，流式让用户始终在<strong>信息流</strong>里。
+        </p>
+        <ul class="feature-list">
+          <li><strong>动效一致</strong>：墨滴落入、卡片 stagger reveal、印章盖下弹跳——全是 CSS 关键帧，无重型动画库。</li>
+          <li><strong>朱砂主题</strong>：自研滚动条、选区配色、按钮 hover 流光——所有动效共享同一组 CSS 变量。</li>
+          <li><strong>可降级</strong>：当 <code class="seal-tag">prefers-reduced-motion</code> 启用时，动画自动收敛为淡入。</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DESIGN PHILOSOPHY ============== -->
+<section class="ink-wash-band" id="design">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow cream">07 / 设计语言</span>
+      <h2 class="zh" style="color:var(--cream-on-dark)">墨韵 — 把<em>中式编辑美学</em>写进工程</h2>
+      <p class="lead" style="color:rgba(232,220,187,.7)">
+        整套 UI 不靠渐变与玻璃拟态撑场面，而是回到<strong>宣纸 · 墨 · 朱砂</strong>三原色。
+        字体用 Noto Serif SC 作正文、Ma Shan Zheng 作印章字、Inter 作数字英文——
+        让 AI 评分结果第一次有一种"被老师用红笔批过"的样子。
+      </p>
+    </div>
+
+    <div class="philosophy-grid reveal">
+      <div class="phil-text">
+        <h3>字是设计的主角</h3>
+        <div class="h3-en" style="color:rgba(232,220,187,.5)">Typography is the protagonist.</div>
+        <p>
+          整个项目没有引入任何 Tailwind / shadcn / Material。
+          所有视觉规则都在 <code class="seal-tag">src/styles/</code> 里以原生 CSS 写就——
+          字号、字重、字距、字号比都有自己的节奏。
+        </p>
+        <p>
+          中文标题用 Noto Serif SC（思源宋体）的 700/900；
+          印章字符用 Ma Shan Zheng（马善政书法体），可读性无所谓，<strong>气质</strong>说了算；
+          拉丁字符用 Cormorant Garamond，让"ESSAY GRADING"这种小标有杂志感。
+        </p>
+        <p>
+          评分卡有"序号徽章"、综合分用"盖印式印章"——动效是盖下时的微抖动，
+          配合颗粒噪点模拟"印泥"质感，让 AI 评分第一次看起来不像在写代码。
+        </p>
+      </div>
+      <div class="phil-palette" style="background:var(--night-soft)">
+        <div class="palette-row">
+          <div class="palette-swatch tone-paper"></div>
+          <div class="palette-info">
+            <div class="name" style="color:var(--cream-on-dark)">宣纸</div>
+            <div class="hex" style="color:rgba(232,220,187,.5)">PAPER · #F3EAD4</div>
+          </div>
+        </div>
+        <div class="palette-row">
+          <div class="palette-swatch tone-paper-deep"></div>
+          <div class="palette-info">
+            <div class="name" style="color:var(--cream-on-dark)">旧宣纸</div>
+            <div class="hex" style="color:rgba(232,220,187,.5)">PAPER DEEP · #E8DCBB</div>
+          </div>
+        </div>
+        <div class="palette-row">
+          <div class="palette-swatch tone-ink"></div>
+          <div class="palette-info">
+            <div class="name" style="color:var(--cream-on-dark)">浓墨</div>
+            <div class="hex" style="color:rgba(232,220,187,.5)">INK · #1A1410</div>
+          </div>
+        </div>
+        <div class="palette-row">
+          <div class="palette-swatch tone-vermillion"></div>
+          <div class="palette-info">
+            <div class="name" style="color:var(--cream-on-dark)">朱砂</div>
+            <div class="hex" style="color:rgba(232,220,187,.5)">VERMILLION · #B8341F</div>
+          </div>
+        </div>
+        <div class="palette-row">
+          <div class="palette-swatch tone-gold"></div>
+          <div class="palette-info">
+            <div class="name" style="color:var(--cream-on-dark)">描金</div>
+            <div class="hex" style="color:rgba(232,220,187,.5)">GOLD · #A07F3A</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== STATS BAND ============== -->
+<section class="stats-band">
+  <div class="wrap">
+    <div class="stat-row">
+      <div class="stat reveal d1">
+        <div class="n">4<span class="s">/</span>7</div>
+        <div class="l">评分维度 · 标准 / 高考</div>
+        <div class="d">DIMENSIONS</div>
+      </div>
+      <div class="stat reveal d2">
+        <div class="n">2</div>
+        <div class="l">评分模式 · standard / gaokao</div>
+        <div class="d">MODES</div>
+      </div>
+      <div class="stat reveal d3">
+        <div class="n">6+</div>
+        <div class="l">兼容 LLM Provider</div>
+        <div class="d">PROVIDERS</div>
+      </div>
+      <div class="stat reveal d4">
+        <div class="n">0</div>
+        <div class="l">后端依赖 · 纯前端 SPA</div>
+        <div class="d">BACKEND</div>
+      </div>
+      <div class="stat reveal d4">
+        <div class="n">12</div>
+        <div class="l">测试文件 · 覆盖工作流 / 页面 / Hooks</div>
+        <div class="d">TEST FILES</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TECH STACK ============== -->
+<section id="stack" style="background:var(--paper-deep);">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">08 / 技术栈</span>
+      <h2 class="zh">不堆数量，只挑<em>能讲清故事</em>的</h2>
+      <p class="lead">
+        依赖克制——核心四件套，外加测试、格式、Lint。所有库都"在岗"：
+        没有为了简历好看而引入的依赖。
+      </p>
+    </div>
+
+    <div class="tech-grid reveal">
+      <div class="tech">
+        <div>
+          <div class="tech-mark">⚛</div>
+          <div class="tech-name">React 18</div>
+          <div class="tech-sub">UI FRAMEWORK</div>
+        </div>
+        <div class="tech-v">v18.3.1 · 组件 + Hooks</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">TS</div>
+          <div class="tech-name">TypeScript</div>
+          <div class="tech-sub">STRICT TYPING</div>
+        </div>
+        <div class="tech-v">v5.5+ · strict mode</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">λ</div>
+          <div class="tech-name">@langchain/langgraph</div>
+          <div class="tech-sub">STATE MACHINE</div>
+        </div>
+        <div class="tech-v">v0.2 · StateGraph</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">⌬</div>
+          <div class="tech-name">@langchain/openai</div>
+          <div class="tech-sub">LLM CLIENT</div>
+        </div>
+        <div class="tech-v">v0.3 · 兼容协议</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">V</div>
+          <div class="tech-name">Vite 5</div>
+          <div class="tech-sub">BUILD TOOL</div>
+        </div>
+        <div class="tech-v">v5.4 · 极速 HMR</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">↺</div>
+          <div class="tech-name">React Router 6</div>
+          <div class="tech-sub">ROUTING</div>
+        </div>
+        <div class="tech-v">v6.26 · HashRouter</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">Z</div>
+          <div class="tech-name">Zod</div>
+          <div class="tech-sub">SCHEMA VALIDATION</div>
+        </div>
+        <div class="tech-v">v3.23 · 结构化输出</div>
+      </div>
+      <div class="tech">
+        <div>
+          <div class="tech-mark">✓</div>
+          <div class="tech-name">Vitest</div>
+          <div class="tech-sub">TEST RUNNER</div>
+        </div>
+        <div class="tech-v">v2 + Testing Library</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== LLM PROVIDERS ============== -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">09 / LLM 兼容</span>
+      <h2 class="zh">所有 OpenAI 兼容协议 · <em>开箱即用</em></h2>
+      <p class="lead">
+        默认连百灵 <code class="seal-tag">Ling-2.6-1T</code>，用户可在 <code class="seal-tag">/settings</code> 替换
+        BaseURL / Model / Key。下面这些 provider 都已在仓库里验证可跑通。
+      </p>
+      <div class="meta">
+        <span>OPENAI-COMPATIBLE</span><span class="dot"></span>
+        <span>CORS 透明</span><span class="dot"></span>
+        <span>KEY-IN-LOCAL-STORAGE</span>
+      </div>
+    </div>
+
+    <div class="providers reveal">
+      <div class="prov">
+        <div class="pdot">百</div>
+        <div class="prov-text">
+          <div class="pn">百灵 Ling</div>
+          <div class="pp">默认 · Ling-2.6-1T</div>
+        </div>
+      </div>
+      <div class="prov alt">
+        <div class="pdot">深</div>
+        <div class="prov-text">
+          <div class="pn">DeepSeek</div>
+          <div class="pp">深度求索 · V3 / R1</div>
+        </div>
+      </div>
+      <div class="prov alt2">
+        <div class="pdot">智</div>
+        <div class="prov-text">
+          <div class="pn">智谱 GLM</div>
+          <div class="pp">GLM-4 / GLM-4-Plus</div>
+        </div>
+      </div>
+      <div class="prov alt3">
+        <div class="pdot">美</div>
+        <div class="prov-text">
+          <div class="pn">美团 LongCat</div>
+          <div class="pp">LongCat-Flash</div>
+        </div>
+      </div>
+      <div class="prov">
+        <div class="pdot">O</div>
+        <div class="prov-text">
+          <div class="pn">OpenAI 兼容</div>
+          <div class="pp">GPT-4o / o1 系列</div>
+        </div>
+      </div>
+      <div class="prov alt">
+        <div class="pdot">魔</div>
+        <div class="prov-text">
+          <div class="pn">魔塔 / 硅基流动</div>
+          <div class="pp">ModelScope · SiliconFlow</div>
+        </div>
+      </div>
+      <div class="prov alt2">
+        <div class="pdot">自</div>
+        <div class="prov-text">
+          <div class="pn">自建 Ollama</div>
+          <div class="pp">Local LLM · 反向代理</div>
+        </div>
+      </div>
+      <div class="prov alt3">
+        <div class="pdot">…</div>
+        <div class="prov-text">
+          <div class="pn">任意兼容</div>
+          <div class="pp">BaseURL + Model + Key</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TESTING ============== -->
+<section style="background:var(--paper-deep);" id="tests">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">10 / 测试</span>
+      <h2 class="zh">小项目也有<em>完整测试覆盖</em></h2>
+      <p class="lead">
+        9 个测试文件，覆盖工作流的 4 个关键文件 + 1 个集成测试。Vitest + Testing Library，
+        跑 <code class="seal-tag">npm test</code> 一秒出结果。
+      </p>
+    </div>
+
+    <div class="tests reveal">
+      <div class="test-cat">
+        <div class="lab">01 · WORKFLOW</div>
+        <h4>工作流单元测试</h4>
+        <p>节点、路由、提示词、状态 schema 的单元级覆盖——保证图结构与提示词迭代时不回归。</p>
+        <div class="files">
+          <span>graph.test.ts</span>
+          <span>routes.test.ts</span>
+          <span>prompts.test.ts</span>
+          <span>state.test.ts</span>
+        </div>
+      </div>
+      <div class="test-cat">
+        <div class="lab">02 · LIBS</div>
+        <h4>设置 / 配额工具</h4>
+        <p>Settings 与 Quota 是项目里最"状态化"的两段逻辑，独立测试保证可预期。</p>
+        <div class="files">
+          <span>lib/settings.test.ts</span>
+          <span>lib/quota.test.ts</span>
+          <span>lib/articles.test.ts</span>
+        </div>
+      </div>
+      <div class="test-cat">
+        <div class="lab">03 · HOOKS + PAGES</div>
+        <h4>Hook 与集成测试</h4>
+        <p>流式 Hook + 配额 Hook + GradingPage 集成测试——验证"键盘 Enter 绕过 disabled 不再调用 run()"。</p>
+        <div class="files">
+          <span>hooks/useGradingStream.test.ts</span>
+          <span>hooks/useQuota.test.ts</span>
+          <span>pages/GradingPage.test.tsx</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== DEPLOYMENT ============== -->
+<section>
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow red">11 / 部署</span>
+      <h2 class="zh">一条 <em>git push</em>，全网可达</h2>
+      <p class="lead">
+        不需要服务器、不需要 CDN 配置。GitHub Actions 在每次推 <code class="seal-tag">main</code> 时跑
+        <code class="seal-tag">tsc --noEmit</code> + <code class="seal-tag">vite build</code>，再把 <code class="seal-tag">dist/</code> 喂给 <code class="seal-tag">actions/deploy-pages</code>。
+      </p>
+    </div>
+
+    <div class="deploy reveal">
+      <div class="deploy-flow">
+        <div class="dstep">
+          <div class="ds-num">01</div>
+          <div class="ds-t">git push main</div>
+          <div class="ds-d">TRIGGER</div>
+        </div>
+        <div class="dstep">
+          <div class="ds-num">02</div>
+          <div class="ds-t">npm install</div>
+          <div class="ds-d">DEPS</div>
+        </div>
+        <div class="dstep">
+          <div class="ds-num">03</div>
+          <div class="ds-t">tsc --noEmit</div>
+          <div class="ds-d">TYPECHECK</div>
+        </div>
+        <div class="dstep">
+          <div class="ds-num">04</div>
+          <div class="ds-t">vite build</div>
+          <div class="ds-d">BUILD</div>
+        </div>
+        <div class="dstep">
+          <div class="ds-num">05</div>
+          <div class="ds-t">deploy-pages</div>
+          <div class="ds-d">SHIP</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== CTA ============== -->
+<section class="cta">
+  <div class="wrap cta-grid">
+    <div>
+      <h2>在<em>浏览器</em>里<br/>跑通一个<em>多智能体</em>。</h2>
+      <p class="cta-sub">
+        代码、流程、状态机都是打开可见的。读它 → 改它 → 部署你自己的版本。
+      </p>
+    </div>
+    <div class="cta-actions">
+      <a class="cta-btn" href="https://codewithwu.github.io/langgraph-essay-grading/" target="_blank" rel="noreferrer">
+        <span>在线演示</span>
+        <span class="arr">→</span>
+      </a>
+      <a class="cta-btn alt" href="https://github.com/codewithwu/langgraph-essay-grading" target="_blank" rel="noreferrer">
+        <span>GitHub 仓库</span>
+        <span class="arr">↗</span>
+      </a>
+      <a class="cta-btn alt" href="https://github.com/codewithwu/langgraph-essay-grading/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">
+        <span>更新日志</span>
+        <span class="arr">↗</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <div class="b">作文评分智能体</div>
+        <div class="s">ESSAY GRADING AGENT · v0.2</div>
+        <p>
+          基于 LangGraph 的多维度评分系统，<strong>标准 / 高考双模式</strong>。
+          纯前端、墨韵设计、开源 MIT。
+          适合作为多智能体编排 / 前端 AI 应用 / 纯静态部署的参考实现。
+        </p>
+      </div>
+      <div class="foot-col">
+        <h5>EXPLORE</h5>
+        <ul>
+          <li><a href="#essence">项目摘要</a></li>
+          <li><a href="#highlights">核心亮点</a></li>
+          <li><a href="#architecture">架构图</a></li>
+          <li><a href="#dimensions">评分维度</a></li>
+          <li><a href="#features">工程亮点</a></li>
+          <li><a href="#design">设计语言</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>STACK</h5>
+        <ul>
+          <li>React 18 + TypeScript</li>
+          <li>LangGraph + LangChain</li>
+          <li>Vite 5 + Vitest</li>
+          <li>Zod 结构化输出</li>
+          <li>GitHub Pages 部署</li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h5>LINKS</h5>
+        <ul>
+          <li><a href="https://github.com/codewithwu/langgraph-essay-grading" target="_blank" rel="noreferrer">GitHub 仓库 ↗</a></li>
+          <li><a href="https://codewithwu.github.io/langgraph-essay-grading/" target="_blank" rel="noreferrer">在线演示 ↗</a></li>
+          <li><a href="https://github.com/codewithwu/langgraph-essay-grading/blob/main/README.md" target="_blank" rel="noreferrer">README ↗</a></li>
+          <li><a href="https://github.com/codewithwu/langgraph-essay-grading/blob/main/CHANGELOG.md" target="_blank" rel="noreferrer">CHANGELOG ↗</a></li>
+          <li><a href="https://github.com/codewithwu/langgraph-essay-grading/blob/main/CLAUDE.md" target="_blank" rel="noreferrer">CLAUDE.md ↗</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>MIT License · 2026</span>
+      <span>墨 · 韵 · 智 · 评</span>
+      <span>MADE WITH RICE PAPER & VERMILLION</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ============ IntersectionObserver reveal ============
+(function(){
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  },{threshold:0.12, rootMargin:'0px 0px -60px 0px'});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+})();
+
+// ============ Parallax on hero calligraphy ============
+(function(){
+  const cal = document.querySelector('.cal-1');
+  if(!cal) return;
+  let tx=0, ty=0, cx=0, cy=0;
+  window.addEventListener('mousemove', e => {
+    tx = (e.clientX / window.innerWidth - .5) * 18;
+    ty = (e.clientY / window.innerHeight - .5) * 18;
+  });
+  function tick(){
+    cx += (tx - cx) * .06;
+    cy += (ty - cy) * .06;
+    cal.style.transform = `rotate(-3deg) translate(${cx}px, ${cy}px)`;
+    requestAnimationFrame(tick);
+  }
+  tick();
+})();
+
+// ============ Hero stats counter (subtle reveal) ============
+(function(){
+  // nothing fancy; keep it static
+})();
+</script>
+</body>
+</html>
